@@ -8,8 +8,19 @@ import * as storage from '../../services/partyStorage';
 import type { Party } from '../../types/party';
 
 export function PartySelect() {
-  const { setPhase, setParty, loadPartyPlayers } = useGame();
-  const [parties, setParties] = useState<Party[]>(() => storage.getParties());
+  const { setPhase, setParty, clearParty, loadPartyPlayers } = useGame();
+  const [currentParty, setCurrentParty] = useState<Party | null>(() => {
+    const savedPartyId = storage.getCurrentPartyId();
+    if (!savedPartyId) return null;
+
+    const savedParty = storage.getParty(savedPartyId);
+    if (!savedParty) {
+      storage.setCurrentPartyId(null);
+      return null;
+    }
+
+    return savedParty;
+  });
   const [showCreate, setShowCreate] = useState(false);
   const [newPartyName, setNewPartyName] = useState('');
 
@@ -18,12 +29,21 @@ export function PartySelect() {
 
     const party = storage.createParty(newPartyName.trim());
     storage.setCurrentPartyId(party.id);
+    setCurrentParty(party);
     setParty(party.id, party.name);
     setPhase('party-lobby');
   };
 
+  const handleCreatePartyKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+
+    e.preventDefault();
+    handleCreateParty();
+  };
+
   const handleSelectParty = (party: Party) => {
     storage.setCurrentPartyId(party.id);
+    setCurrentParty(party);
     setParty(party.id, party.name);
 
     // Load players with scores
@@ -38,10 +58,15 @@ export function PartySelect() {
     setPhase('party-lobby');
   };
 
-  const handleDeleteParty = (e: React.MouseEvent, partyId: string) => {
-    e.stopPropagation();
+  const handleDeleteParty = (partyId: string) => {
     storage.deleteParty(partyId);
-    setParties(storage.getParties());
+    if (storage.getCurrentPartyId() === partyId) {
+      storage.setCurrentPartyId(null);
+    }
+    clearParty();
+    setCurrentParty(null);
+    setShowCreate(false);
+    setNewPartyName('');
   };
 
   return (
@@ -59,11 +84,13 @@ export function PartySelect() {
           >
             Insight
           </motion.h1>
-          <p className="text-white/60">Choisis ou cree un groupe</p>
+          <p className="text-white/60">
+            {currentParty ? 'Seul ton groupe actif est visible sur cet appareil' : 'Cree ton groupe'}
+          </p>
         </motion.div>
 
         <AnimatePresence mode="wait">
-          {showCreate ? (
+          {showCreate || !currentParty ? (
             <motion.div
               key="create"
               initial={{ opacity: 0, x: 20 }}
@@ -79,19 +106,22 @@ export function PartySelect() {
                   type="text"
                   value={newPartyName}
                   onChange={e => setNewPartyName(e.target.value)}
+                  onKeyDown={handleCreatePartyKeyDown}
                   placeholder="Nom du groupe..."
                   maxLength={30}
                   className="w-full px-4 py-3 text-lg mb-4"
                   autoFocus
                 />
                 <div className="flex gap-3">
-                  <Button
-                    onClick={() => setShowCreate(false)}
-                    variant="secondary"
-                    fullWidth
-                  >
-                    Annuler
-                  </Button>
+                  {currentParty && (
+                    <Button
+                      onClick={() => setShowCreate(false)}
+                      variant="secondary"
+                      fullWidth
+                    >
+                      Annuler
+                    </Button>
+                  )}
                   <Button
                     onClick={handleCreateParty}
                     disabled={!newPartyName.trim()}
@@ -110,67 +140,60 @@ export function PartySelect() {
               exit={{ opacity: 0 }}
               className="flex-1 flex flex-col"
             >
-              <Button
-                onClick={() => setShowCreate(true)}
-                fullWidth
-                size="lg"
-                className="mb-6 glow-purple"
+              <p className="text-white/40 text-sm mb-3">
+                Groupe actif
+              </p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
               >
-                + Creer un groupe
-              </Button>
-
-              {parties.length > 0 && (
-                <>
-                  <p className="text-white/40 text-sm mb-3">
-                    Groupes existants
-                  </p>
-                  <div className="flex-1 overflow-y-auto space-y-3">
-                    {parties.map((party, index) => (
-                      <motion.div
-                        key={party.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <Card
-                          onClick={() => handleSelectParty(party)}
-                          className="p-4 flex items-center justify-between"
-                        >
-                          <div>
-                            <h3 className="text-white font-bold text-lg">
-                              {party.name}
-                            </h3>
-                            <p className="text-white/40 text-sm">
-                              {party.players.length} joueur{party.players.length > 1 ? 's' : ''}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl">👥</span>
-                            <motion.button
-                              whileTap={{ scale: 0.9 }}
-                              onClick={(e) => handleDeleteParty(e, party.id)}
-                              className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400"
-                            >
-                              ×
-                            </motion.button>
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))}
+                <Card
+                  onClick={() => handleSelectParty(currentParty)}
+                  className="p-4 flex items-center justify-between mb-4"
+                >
+                  <div>
+                    <h3 className="text-white font-bold text-lg">
+                      {currentParty.name}
+                    </h3>
+                    <p className="text-white/40 text-sm">
+                      {currentParty.players.length} joueur{currentParty.players.length > 1 ? 's' : ''}
+                    </p>
                   </div>
-                </>
-              )}
+                  <span className="text-2xl">👥</span>
+                </Card>
+              </motion.div>
 
-              {parties.length === 0 && (
-                <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <span className="text-6xl mb-4">🎉</span>
-                  <p className="text-white/60">
-                    Aucun groupe pour le moment.
-                    <br />
-                    Cree ton premier groupe !
-                  </p>
-                </div>
-              )}
+              <p className="text-white/50 text-sm mb-6">
+                Les autres groupes enregistres localement ne sont pas affiches ici.
+              </p>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={() => handleSelectParty(currentParty)}
+                  fullWidth
+                  size="lg"
+                  className="glow-purple"
+                >
+                  Continuer avec ce groupe
+                </Button>
+
+                <Button
+                  onClick={() => setShowCreate(true)}
+                  variant="secondary"
+                  fullWidth
+                >
+                  Creer un autre groupe
+                </Button>
+
+                <Button
+                  onClick={() => handleDeleteParty(currentParty.id)}
+                  variant="secondary"
+                  fullWidth
+                  className="border border-red-500/30 text-red-300"
+                >
+                  Supprimer ce groupe
+                </Button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

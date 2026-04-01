@@ -33,10 +33,11 @@ export function PartyLobby() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleAddPlayer();
-    }
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+
+    e.preventDefault();
+    handleAddPlayer();
   };
 
   const handleBack = () => {
@@ -73,7 +74,7 @@ export function PartyLobby() {
               type="text"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleInputKeyDown}
               placeholder="Ajouter un joueur..."
               maxLength={20}
               className="flex-1 px-4 py-3 text-lg"

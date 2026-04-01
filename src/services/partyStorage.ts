@@ -1,6 +1,13 @@
 import type { Party, PartyGame, PartyPlayer } from '../types/party';
 import { generatePartyId, generateId } from '../types/party';
 import { getNextColor } from '../utils/colors';
+import {
+  readPersistentString,
+  readPersistentValue,
+  removePersistentValue,
+  writePersistentString,
+  writePersistentValue,
+} from './browserStorage';
 
 const PARTIES_KEY = 'insight_parties';
 const CURRENT_PARTY_KEY = 'insight_current_party';
@@ -8,12 +15,11 @@ const GAMES_KEY = 'insight_games';
 
 // Party Management
 export function getParties(): Party[] {
-  const data = localStorage.getItem(PARTIES_KEY);
-  return data ? JSON.parse(data) : [];
+  return readPersistentValue<Party[]>(PARTIES_KEY, []);
 }
 
 export function saveParties(parties: Party[]): void {
-  localStorage.setItem(PARTIES_KEY, JSON.stringify(parties));
+  writePersistentValue(PARTIES_KEY, parties);
 }
 
 export function createParty(name: string): Party {
@@ -59,14 +65,14 @@ export function deleteParty(partyId: string): void {
 
 // Current Party Session
 export function getCurrentPartyId(): string | null {
-  return localStorage.getItem(CURRENT_PARTY_KEY);
+  return readPersistentString(CURRENT_PARTY_KEY);
 }
 
 export function setCurrentPartyId(partyId: string | null): void {
   if (partyId) {
-    localStorage.setItem(CURRENT_PARTY_KEY, partyId);
+    writePersistentString(CURRENT_PARTY_KEY, partyId);
   } else {
-    localStorage.removeItem(CURRENT_PARTY_KEY);
+    removePersistentValue(CURRENT_PARTY_KEY);
   }
 }
 
@@ -102,12 +108,11 @@ export function removePlayerFromParty(partyId: string, playerId: string): void {
 
 // Game Management
 export function getGames(): PartyGame[] {
-  const data = localStorage.getItem(GAMES_KEY);
-  return data ? JSON.parse(data) : [];
+  return readPersistentValue<PartyGame[]>(GAMES_KEY, []);
 }
 
 export function saveGames(games: PartyGame[]): void {
-  localStorage.setItem(GAMES_KEY, JSON.stringify(games));
+  writePersistentValue(GAMES_KEY, games);
 }
 
 export function createGame(partyId: string, mode: string): PartyGame {

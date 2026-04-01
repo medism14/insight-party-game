@@ -52,6 +52,14 @@ export function AnswerInput() {
     }
   };
 
+  const handleAnswerKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter') return;
+    if (!e.metaKey && !e.ctrlKey) return;
+
+    e.preventDefault();
+    handleSubmit();
+  };
+
   const progress = state.currentAnswers.length;
   const total = respondents.length;
 
@@ -85,6 +93,7 @@ export function AnswerInput() {
           <textarea
             value={answer}
             onChange={e => setAnswer(e.target.value)}
+            onKeyDown={handleAnswerKeyDown}
             placeholder="Ecrivez votre reponse..."
             maxLength={200}
             className="flex-1 p-4 text-lg resize-none min-h-[150px]"
@@ -92,6 +101,9 @@ export function AnswerInput() {
           />
           <p className="text-white/30 text-sm text-right mt-2">
             {answer.length}/200
+          </p>
+          <p className="text-white/30 text-sm mt-2">
+            Astuce: utilisez Ctrl+Entree ou Cmd+Entree pour valider rapidement.
           </p>
         </motion.div>
 

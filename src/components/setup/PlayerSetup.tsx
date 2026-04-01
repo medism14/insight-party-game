@@ -17,10 +17,11 @@ export function PlayerSetup() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleAddPlayer();
-    }
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+
+    e.preventDefault();
+    handleAddPlayer();
   };
 
   const canContinue = state.players.length >= 2;
@@ -38,7 +39,7 @@ export function PlayerSetup() {
               type="text"
               value={inputValue}
               onChange={e => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleInputKeyDown}
               placeholder="Entrez un prenom..."
               maxLength={20}
               className="flex-1 px-4 py-3 text-lg"
