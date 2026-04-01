@@ -1,5 +1,6 @@
 import type { Question, GameMode } from '../types/game';
 import { classicQuestions } from './questions-classic';
+import { blackoutQuestions } from './questions-blackout';
 import { spicyQuestions } from './questions-spicy';
 import { deepQuestions } from './questions-deep';
 import { hoootQuestions } from './questions-hooot';
@@ -17,8 +18,9 @@ const troublePrompts: Question[] = troubleMissions.map((mission) => ({
 export function getQuestionsForMode(mode: GameMode): Question[] {
   switch (mode) {
     case 'classic':
-    case 'blackout':
       return classicQuestions;
+    case 'blackout':
+      return blackoutQuestions;
     case 'spicy':
       return spicyQuestions;
     case 'deep':
@@ -46,6 +48,7 @@ export function getMissions() {
 
 export {
   classicQuestions,
+  blackoutQuestions,
   spicyQuestions,
   deepQuestions,
   hoootQuestions,

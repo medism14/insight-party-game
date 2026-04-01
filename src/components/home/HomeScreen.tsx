@@ -14,7 +14,7 @@ export function HomeScreen() {
         className="text-center mb-12"
       >
         <motion.h1
-          className="text-6xl font-extrabold gradient-text mb-4"
+          className="text-6xl font-extrabold gradient-text mb-4 pb-1"
           animate={{ scale: [1, 1.02, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
@@ -43,22 +43,24 @@ export function HomeScreen() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.5 }}
-        className="absolute bottom-8 flex gap-2"
+        className="absolute bottom-8 flex w-full flex-col items-center gap-4 px-6"
       >
-        {['🎯', '🔥', '🧠', '⚔️', '🎭'].map((emoji, i) => (
-          <motion.span
-            key={i}
-            className="text-2xl"
-            animate={{ y: [0, -10, 0] }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              delay: i * 0.2,
-            }}
-          >
-            {emoji}
-          </motion.span>
-        ))}
+        <div className="flex gap-5">
+          {['🎯', '🔥', '🧠', '⚔️', '🎭'].map((emoji, i) => (
+            <motion.span
+              key={i}
+              className="text-2xl"
+              animate={{ y: [0, -10, 0] }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                delay: i * 0.2,
+              }}
+            >
+              {emoji}
+            </motion.span>
+          ))}
+        </div>
       </motion.div>
     </div>
   );
