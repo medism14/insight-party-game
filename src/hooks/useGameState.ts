@@ -155,9 +155,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'SET_COIN_FLIP_CHOICE':
-      return { ...state, coinFlipChoice: action.payload };
+      return {
+        ...state,
+        coinFlipChoice: action.payload,
+        ...(action.payload === null ? { coinFlipResult: null, lastTurnWon: null } : {}),
+      };
 
     case 'SET_COIN_FLIP_RESULT': {
+      if (action.payload === null) {
+        return {
+          ...state,
+          coinFlipResult: null,
+          lastTurnWon: null,
+        };
+      }
+
       const won = state.coinFlipChoice === action.payload;
       return {
         ...state,
@@ -209,6 +221,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'SET_QUESTION': {
+      if (action.payload === null) {
+        return {
+          ...state,
+          currentQuestion: null,
+        };
+      }
+
       const newUsedIds = new Set(state.usedQuestionIds);
       newUsedIds.add(action.payload.id);
       return {
@@ -385,11 +404,11 @@ export function useGameState() {
     dispatch({ type: 'START_PLAYER_TURN', payload: { playerIndex, question } });
   }, []);
 
-  const setCoinFlipChoice = useCallback((choice: 'heads' | 'tails') => {
+  const setCoinFlipChoice = useCallback((choice: 'heads' | 'tails' | null) => {
     dispatch({ type: 'SET_COIN_FLIP_CHOICE', payload: choice });
   }, []);
 
-  const setCoinFlipResult = useCallback((result: 'heads' | 'tails') => {
+  const setCoinFlipResult = useCallback((result: 'heads' | 'tails' | null) => {
     dispatch({ type: 'SET_COIN_FLIP_RESULT', payload: result });
   }, []);
 
@@ -401,7 +420,7 @@ export function useGameState() {
     dispatch({ type: 'NEXT_PLAYER_TURN' });
   }, []);
 
-  const setQuestion = useCallback((question: Question) => {
+  const setQuestion = useCallback((question: Question | null) => {
     dispatch({ type: 'SET_QUESTION', payload: question });
   }, []);
 

@@ -15,9 +15,11 @@ import { DareScreen } from './DareScreen';
 import { DeepQuestion } from './DeepQuestion';
 import { SecretMission } from './SecretMission';
 import { Scoreboard } from '../scoreboard/Scoreboard';
+import { GameStateFallback } from './GameStateFallback';
 
 export function GameController() {
-  const { state } = useGame();
+  const { state, setPhase, resetGame, getModeConfig } = useGame();
+  const modeConfig = getModeConfig();
 
   const renderPhase = () => {
     switch (state.phase) {
@@ -68,7 +70,17 @@ export function GameController() {
         return <Scoreboard />;
 
       default:
-        return null;
+        return (
+          <GameStateFallback
+            title="Cet ecran ne peut pas s'afficher"
+            description={`La partie est arrivee sur une etape inconnue (${state.phase}). On peut revenir au tour en cours ou relancer la partie sans laisser l'interface vide.`}
+            primaryLabel="Revenir au tour"
+            onPrimary={() => setPhase('round-intro')}
+            secondaryLabel="Retour a l'accueil"
+            onSecondary={resetGame}
+            color={modeConfig?.color}
+          />
+        );
     }
   };
 

@@ -101,7 +101,7 @@ export type GameAction =
   | { type: 'SELECT_MODE'; payload: GameMode }
   | { type: 'SET_TOTAL_ROUNDS'; payload: number }
   | { type: 'START_ROUND' }
-  | { type: 'SET_QUESTION'; payload: Question }
+  | { type: 'SET_QUESTION'; payload: Question | null }
   | { type: 'NEXT_RESPONDENT' }
   | { type: 'SUBMIT_ANSWER'; payload: PlayerAnswer }
   | { type: 'SELECT_BEST_ANSWER'; payload: string }
@@ -123,8 +123,8 @@ export type GameAction =
   | { type: 'LOAD_PARTY_PLAYERS'; payload: Player[] }
   // New turn-based actions
   | { type: 'START_PLAYER_TURN'; payload: { playerIndex: number; question: Question } }
-  | { type: 'SET_COIN_FLIP_CHOICE'; payload: 'heads' | 'tails' }
-  | { type: 'SET_COIN_FLIP_RESULT'; payload: 'heads' | 'tails' }
+  | { type: 'SET_COIN_FLIP_CHOICE'; payload: 'heads' | 'tails' | null }
+  | { type: 'SET_COIN_FLIP_RESULT'; payload: 'heads' | 'tails' | null }
   | { type: 'COMPLETE_PLAYER_TURN' }
   | { type: 'PICK_RANDOM_PLAYER' }
   | { type: 'NEXT_PLAYER_TURN' };

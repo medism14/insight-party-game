@@ -7,7 +7,8 @@ import { PlayerAvatar } from '../common/PlayerAvatar';
 import { CoinFlip, CoinChoice } from './CoinFlip';
 import { useGame } from '../../hooks/useGame';
 import { getQuestionsForMode } from '../../data';
-import { pickRandomExcluding } from '../../utils/shuffle';
+import { pickRandom, pickRandomExcluding } from '../../utils/shuffle';
+import { GameStateFallback } from './GameStateFallback';
 import type { Question } from '../../types/game';
 
 type TurnPhase = 'loading' | 'question' | 'coin-choice' | 'coin-flip' | 'result' | 'round-complete';
@@ -42,40 +43,63 @@ export function PlayerTurnScreen() {
 
   const modeConfig = getModeConfig();
   const selectedPlayer = selectedPlayerIndex >= 0 ? state.players[selectedPlayerIndex] : null;
+  const activeQuestion = displayedQuestion ?? state.currentQuestion;
 
   // Player wins = question stays secret
   // Player loses = must reveal question
   const playerWon = state.coinFlipChoice === state.coinFlipResult;
+
+  const resetTurnState = useCallback(() => {
+    setIsAnimating(false);
+    setLocalResult(null);
+    setDisplayedQuestion(null);
+    setQuestion(null);
+    setCoinFlipChoice(null);
+    setCoinFlipResult(null);
+  }, [setQuestion, setCoinFlipChoice, setCoinFlipResult]);
 
   // Prepare question for current player
   const prepareQuestionForPlayer = useCallback(() => {
     if (!state.mode || !selectedPlayer) return;
 
     const questions = getQuestionsForMode(state.mode);
-    const question = pickRandomExcluding(questions, usedQuestionIds, q => q.id);
+    const nextQuestion =
+      pickRandomExcluding(questions, usedQuestionIds, q => q.id) ??
+      (questions.length > 0 ? pickRandom(questions) : null);
 
-    if (question) {
-      let text = question.text;
-      if (text.includes('{player}')) {
-        text = text.replace(/{player}/g, selectedPlayer.name);
-      }
-      if (text.includes('{player1}') || text.includes('{player2}')) {
-        const otherPlayers = state.players.filter((_, i) => i !== selectedPlayerIndex);
+    if (!nextQuestion) {
+      resetTurnState();
+      setTurnPhase('round-complete');
+      return;
+    }
+
+    let text = nextQuestion.text;
+    if (text.includes('{player}')) {
+      text = text.replace(/{player}/g, selectedPlayer.name);
+    }
+    if (text.includes('{player1}') || text.includes('{player2}')) {
+      const otherPlayers = state.players.filter((_, i) => i !== selectedPlayerIndex);
+      if (otherPlayers.length > 0) {
         const idx1 = getRandomIndex(otherPlayers.length);
-        let idx2 = getRandomIndex(otherPlayers.length);
-        if (idx2 === idx1 && otherPlayers.length > 1) {
+        let idx2 = idx1;
+        if (otherPlayers.length > 1) {
           idx2 = (idx1 + 1) % otherPlayers.length;
         }
         text = text.replace(/{player1}/g, otherPlayers[idx1]?.name || '');
         text = text.replace(/{player2}/g, otherPlayers[idx2]?.name || '');
       }
-      const newQuestion = { ...question, text };
-      setDisplayedQuestion(newQuestion);
-      setQuestion(newQuestion);
-      setUsedQuestionIds(prev => new Set([...prev, question.id]));
     }
+
+    const newQuestion = { ...nextQuestion, text };
+    setDisplayedQuestion(newQuestion);
+    setQuestion(newQuestion);
+    setUsedQuestionIds(prev => {
+      const nextUsedIds = prev.has(nextQuestion.id) ? new Set<number>() : new Set(prev);
+      nextUsedIds.add(nextQuestion.id);
+      return nextUsedIds;
+    });
     setTurnPhase('question');
-  }, [state.mode, state.players, selectedPlayer, selectedPlayerIndex, usedQuestionIds, setQuestion]);
+  }, [state.mode, state.players, selectedPlayer, selectedPlayerIndex, usedQuestionIds, resetTurnState, setQuestion]);
 
   // Start the game when component loads
   const handleStart = useCallback(() => {
@@ -87,6 +111,7 @@ export function PlayerTurnScreen() {
   };
 
   const handleCoinChoice = (choice: 'heads' | 'tails') => {
+    if (state.coinFlipChoice || isAnimating) return;
     setCoinFlipChoice(choice);
     setTimeout(() => handleFlip(), 150);
   };
@@ -106,16 +131,18 @@ export function PlayerTurnScreen() {
   }, [setCoinFlipResult]);
 
   const handleNext = () => {
+    if (!selectedPlayer) {
+      resetTurnState();
+      setTurnPhase('round-complete');
+      return;
+    }
+
     // Mark current player as played
-    const newPlayedIds = new Set([...playedPlayerIds, selectedPlayer?.id || '']);
+    const newPlayedIds = new Set([...playedPlayerIds, selectedPlayer.id]);
     setPlayedPlayerIds(newPlayedIds);
 
     // Reset turn state
-    setLocalResult(null);
-    setDisplayedQuestion(null);
-    setQuestion(null as unknown as Question);
-    setCoinFlipChoice(null as unknown as 'heads' | 'tails');
-    setCoinFlipResult(null as unknown as 'heads' | 'tails');
+    resetTurnState();
 
     // Check if all players have played
     if (newPlayedIds.size >= state.players.length) {
@@ -123,6 +150,10 @@ export function PlayerTurnScreen() {
     } else {
       // Pick next random player
       const available = state.players.filter(p => !newPlayedIds.has(p.id));
+      if (available.length === 0) {
+        setTurnPhase('round-complete');
+        return;
+      }
       const randomPlayer = available[getRandomIndex(available.length)];
       const nextIndex = state.players.findIndex(p => p.id === randomPlayer.id);
       setSelectedPlayerIndex(nextIndex);
@@ -133,17 +164,69 @@ export function PlayerTurnScreen() {
   const handleNewRound = () => {
     setPlayedPlayerIds(new Set<string>());
     setRoundNumber(prev => prev + 1);
-    setDisplayedQuestion(null);
+    resetTurnState();
     // Pick random player for new round
     const nextIndex = getRandomIndex(state.players.length);
     setSelectedPlayerIndex(nextIndex);
-    setQuestion(null as unknown as Question);
     setTurnPhase('loading');
   };
 
   const handleQuit = () => {
+    resetTurnState();
     resetGame();
   };
+
+  if (!state.mode || !modeConfig) {
+    return (
+      <GameStateFallback
+        title="Mode de jeu introuvable"
+        description="Le tour a ete lance sans mode actif. On peut revenir au choix du mode pour repartir proprement."
+        primaryLabel="Choisir un mode"
+        onPrimary={handleQuit}
+      />
+    );
+  }
+
+  if (state.players.length === 0) {
+    return (
+      <GameStateFallback
+        title="Aucun joueur charge"
+        description="La partie a besoin d'au moins un joueur pour continuer. On revient a l'accueil afin de recreer la partie proprement."
+        primaryLabel="Retour a l'accueil"
+        onPrimary={handleQuit}
+        color={modeConfig.color}
+      />
+    );
+  }
+
+  if (!selectedPlayer && turnPhase !== 'round-complete') {
+    return (
+      <GameStateFallback
+        title="Joueur suivant introuvable"
+        description="Le joueur actif n'a pas pu etre determine. On peut relancer proprement la partie sans laisser d'ecran vide."
+        primaryLabel="Retour a l'accueil"
+        onPrimary={handleQuit}
+        color={modeConfig.color}
+      />
+    );
+  }
+
+  if (turnPhase === 'question' && !activeQuestion) {
+    return (
+      <GameStateFallback
+        title="Question indisponible"
+        description="La question du joueur n'a pas pu etre preparee. On peut revenir au joueur suivant pour reprendre sans erreur."
+        primaryLabel="Revenir au tour"
+        onPrimary={() => {
+          resetTurnState();
+          setTurnPhase('loading');
+        }}
+        secondaryLabel="Retour a l'accueil"
+        onSecondary={handleQuit}
+        color={modeConfig.color}
+      />
+    );
+  }
 
   return (
     <Screen>
@@ -227,7 +310,7 @@ export function PlayerTurnScreen() {
                   Lis et reponds a voix haute
                 </p>
                 <p className="text-white text-xl font-medium text-center leading-relaxed">
-                  {displayedQuestion?.text || state.currentQuestion?.text}
+                  {activeQuestion?.text}
                 </p>
               </Card>
 
@@ -271,6 +354,7 @@ export function PlayerTurnScreen() {
                 <CoinChoice
                   onChoice={handleCoinChoice}
                   selected={state.coinFlipChoice}
+                  disabled={Boolean(state.coinFlipChoice) || isAnimating}
                 />
               </div>
             </motion.div>
@@ -325,7 +409,7 @@ export function PlayerTurnScreen() {
                 {state.coinFlipChoice === 'heads' ? 'PILE' : 'FACE'} vs {state.coinFlipResult === 'heads' ? 'PILE' : 'FACE'}
               </p>
 
-              {!playerWon && (displayedQuestion || state.currentQuestion) && (
+              {!playerWon && activeQuestion && (
                 <Card className="w-full max-w-md p-4 mb-6 border-2 border-orange-500/30">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="text-lg">👀</span>
@@ -334,7 +418,7 @@ export function PlayerTurnScreen() {
                     </p>
                   </div>
                   <p className="text-white text-lg font-medium text-center">
-                    {displayedQuestion?.text || state.currentQuestion?.text}
+                    {activeQuestion.text}
                   </p>
                 </Card>
               )}

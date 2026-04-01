@@ -3,11 +3,13 @@ import { Screen } from '../layout/Screen';
 import { Button } from '../common/Button';
 import { PlayerAvatar } from '../common/PlayerAvatar';
 import { useGame } from '../../hooks/useGame';
+import { GameStateFallback } from './GameStateFallback';
 
 export function PassPhone() {
   const {
     state,
     setPhase,
+    resetGame,
     getModeConfig,
     getCurrentJudge,
     getCurrentRespondent,
@@ -57,7 +59,19 @@ export function PassPhone() {
     }
   };
 
-  if (!targetPlayer) return null;
+  if (!targetPlayer) {
+    return (
+      <GameStateFallback
+        title="Impossible de passer le telephone"
+        description="Le joueur suivant n'a pas pu etre determine. On peut revenir a l'introduction du tour pour reprendre proprement."
+        primaryLabel="Reprendre le tour"
+        onPrimary={() => setPhase('round-intro')}
+        secondaryLabel="Retour a l'accueil"
+        onSecondary={resetGame}
+        color={modeConfig?.color}
+      />
+    );
+  }
 
   return (
     <Screen>

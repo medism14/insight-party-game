@@ -3,14 +3,29 @@ import { Screen } from '../layout/Screen';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
 import { useGame } from '../../hooks/useGame';
+import { GameStateFallback } from './GameStateFallback';
 
 export function QuestionDisplay() {
-  const { state, setPhase, getModeConfig } = useGame();
+  const { state, setPhase, getModeConfig, resetGame } = useGame();
   const modeConfig = getModeConfig();
 
   const handleContinue = () => {
     setPhase('answer');
   };
+
+  if (!state.currentQuestion) {
+    return (
+      <GameStateFallback
+        title="Question indisponible"
+        description="La question n'est plus disponible pour ce tour. On peut revenir au debut du round ou relancer la partie proprement."
+        primaryLabel="Revenir au round"
+        onPrimary={() => setPhase('round-intro')}
+        secondaryLabel="Retour a l'accueil"
+        onSecondary={resetGame}
+        color={modeConfig?.color}
+      />
+    );
+  }
 
   return (
     <Screen>
@@ -39,7 +54,7 @@ export function QuestionDisplay() {
         >
           <Card className="p-6">
             <p className="text-white text-xl font-medium text-center leading-relaxed">
-              {state.currentQuestion?.text}
+              {state.currentQuestion.text}
             </p>
           </Card>
         </motion.div>
