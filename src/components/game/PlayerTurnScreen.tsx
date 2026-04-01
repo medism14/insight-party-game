@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Screen } from '../layout/Screen';
 import { Button } from '../common/Button';
@@ -9,109 +9,82 @@ import { useGame } from '../../hooks/useGame';
 import { getQuestionsForMode } from '../../data';
 import { pickRandomExcluding } from '../../utils/shuffle';
 
-type TurnPhase = 'intro' | 'question' | 'name-input' | 'coin-choice' | 'coin-flip' | 'result';
-
-const slideVariants = {
-  enter: { opacity: 0 },
-  center: { opacity: 1 },
-  exit: { opacity: 0 },
-};
+type TurnPhase = 'select-player' | 'question' | 'coin-choice' | 'coin-flip' | 'result' | 'round-complete';
 
 export function PlayerTurnScreen() {
   const {
     state,
-    setPhase,
     setQuestion,
     setCoinFlipChoice,
     setCoinFlipResult,
-    completePlayerTurn,
-    nextPlayerTurn,
     getModeConfig,
-    getCurrentPlayer,
-    getPlayersRemaining,
+    resetGame,
   } = useGame();
 
-  const [turnPhase, setTurnPhase] = useState<TurnPhase>('intro');
-  const [responderName, setResponderName] = useState('');
+  const [turnPhase, setTurnPhase] = useState<TurnPhase>('select-player');
+  const [selectedPlayerIndex, setSelectedPlayerIndex] = useState<number | null>(null);
+  const [playedPlayerIds, setPlayedPlayerIds] = useState<Set<string>>(new Set());
+  const [roundNumber, setRoundNumber] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [localResult, setLocalResult] = useState<'heads' | 'tails' | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [usedQuestionIds, setUsedQuestionIds] = useState<Set<number>>(new Set());
 
   const modeConfig = getModeConfig();
-  const currentPlayer = getCurrentPlayer();
-  const playersRemaining = getPlayersRemaining();
+  const selectedPlayer = selectedPlayerIndex !== null ? state.players[selectedPlayerIndex] : null;
+
+  // Players who haven't played this round
+  const availablePlayers = state.players.filter(p => !playedPlayerIds.has(p.id));
+
+  // Player wins = question stays secret
+  // Player loses = must reveal question
+  const playerWon = state.coinFlipChoice === state.coinFlipResult;
 
   const prepareQuestion = useCallback(() => {
-    if (!state.mode || state.currentQuestion) return;
+    if (!state.mode) return;
 
     const questions = getQuestionsForMode(state.mode);
-    const question = pickRandomExcluding(
-      questions,
-      state.usedQuestionIds,
-      q => q.id
-    );
+    const question = pickRandomExcluding(questions, usedQuestionIds, q => q.id);
 
     if (question) {
       let text = question.text;
-      if (currentPlayer && text.includes('{player}')) {
-        text = text.replace(/{player}/g, currentPlayer.name);
+      if (selectedPlayer && text.includes('{player}')) {
+        text = text.replace(/{player}/g, selectedPlayer.name);
       }
       if (text.includes('{player1}') || text.includes('{player2}')) {
-        const otherPlayers = state.players.filter(p => p.id !== currentPlayer?.id);
+        const otherPlayers = state.players.filter((_, i) => i !== selectedPlayerIndex);
         const shuffled = [...otherPlayers].sort(() => Math.random() - 0.5);
         text = text.replace(/{player1}/g, shuffled[0]?.name || '');
         text = text.replace(/{player2}/g, shuffled[1]?.name || '');
       }
       setQuestion({ ...question, text });
+      setUsedQuestionIds(prev => new Set([...prev, question.id]));
     }
-  }, [state.mode, state.currentQuestion, state.usedQuestionIds, currentPlayer, state.players, setQuestion]);
+  }, [state.mode, state.players, selectedPlayer, selectedPlayerIndex, usedQuestionIds, setQuestion]);
 
-  // Prepare question when entering intro
-  useEffect(() => {
-    if (turnPhase === 'intro') {
-      prepareQuestion();
-    }
-  }, [turnPhase, prepareQuestion]);
+  const handleSelectPlayer = (index: number) => {
+    const player = state.players[index];
+    if (playedPlayerIds.has(player.id)) return; // Already played
 
-  // Focus input when entering name-input phase
-  useEffect(() => {
-    if (turnPhase === 'name-input' && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [turnPhase]);
-
-  const handleStartTurn = () => {
+    setSelectedPlayerIndex(index);
     setTurnPhase('question');
   };
 
-  const handleQuestionAsked = () => {
-    setTurnPhase('name-input');
-  };
-
-  const handleNameSubmit = () => {
-    if (!responderName.trim()) return;
-    setTurnPhase('coin-choice');
-  };
-
-  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && responderName.trim()) {
-      e.preventDefault();
-      handleNameSubmit();
+  useEffect(() => {
+    if (turnPhase === 'question' && selectedPlayer && !state.currentQuestion) {
+      prepareQuestion();
     }
+  }, [turnPhase, selectedPlayer, state.currentQuestion, prepareQuestion]);
+
+  const handleQuestionAsked = () => {
+    setTurnPhase('coin-choice');
   };
 
   const handleCoinChoice = (choice: 'heads' | 'tails') => {
     setCoinFlipChoice(choice);
-    // Auto-flip after choice for smoother flow
-    setTimeout(() => {
-      handleFlip(choice);
-    }, 200);
+    setTimeout(() => handleFlip(choice), 150);
   };
 
-  const handleFlip = useCallback((choice?: 'heads' | 'tails') => {
-    const selectedChoice = choice || state.coinFlipChoice;
-    if (!selectedChoice) return;
-
+  const handleFlip = useCallback((_choice: 'heads' | 'tails') => {
     setIsAnimating(true);
     setTurnPhase('coin-flip');
 
@@ -121,112 +94,152 @@ export function PlayerTurnScreen() {
       setLocalResult(result);
       setIsAnimating(false);
       setCoinFlipResult(result);
-      setTimeout(() => setTurnPhase('result'), 200);
+      setTimeout(() => setTurnPhase('result'), 150);
     }, 1500);
-  }, [state.coinFlipChoice, setCoinFlipResult]);
+  }, [setCoinFlipResult]);
 
-  const handleContinue = () => {
-    completePlayerTurn();
+  const handleNext = () => {
+    // Mark current player as played
+    if (selectedPlayer) {
+      setPlayedPlayerIds(prev => new Set([...prev, selectedPlayer.id]));
+    }
 
-    if (playersRemaining > 1) {
-      nextPlayerTurn();
+    // Reset turn state
+    setSelectedPlayerIndex(null);
+    setLocalResult(null);
+    setQuestion(null as any);
+    setCoinFlipChoice(null as any);
+    setCoinFlipResult(null as any);
+
+    // Check if all players have played
+    const newPlayedIds = new Set([...playedPlayerIds, selectedPlayer?.id || '']);
+    if (newPlayedIds.size >= state.players.length) {
+      setTurnPhase('round-complete');
     } else {
-      setPhase('round-complete');
+      setTurnPhase('select-player');
     }
   };
 
-  if (!currentPlayer) {
-    return null;
-  }
+  const handleNewRound = () => {
+    setPlayedPlayerIds(new Set());
+    setRoundNumber(prev => prev + 1);
+    setTurnPhase('select-player');
+  };
 
-  // Player wins = question stays secret
-  // System wins (player loses) = must reveal question
-  const playerWon = state.lastTurnWon;
-  const mustRevealQuestion = !playerWon;
+  const handleQuit = () => {
+    resetGame();
+  };
 
   return (
     <Screen>
       <div className="flex-1 flex flex-col p-4 pb-6 overflow-hidden">
-        {/* Progress indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center mb-3"
-        >
-          <p className="text-white/40 text-xs">
-            Tour {state.currentRound} - {state.playersPlayedThisRound.length + 1}/{state.players.length}
-          </p>
-        </motion.div>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-2">
+            <div
+              className="px-3 py-1 rounded-full text-xs font-medium"
+              style={{ backgroundColor: `${modeConfig?.color}20`, color: modeConfig?.color }}
+            >
+              {modeConfig?.name}
+            </div>
+            <span className="text-white/30 text-xs">
+              Tour {roundNumber}
+            </span>
+          </div>
+          <button
+            onClick={handleQuit}
+            className="text-white/40 text-sm active:text-white/60"
+          >
+            Quitter
+          </button>
+        </div>
 
         <AnimatePresence mode="wait">
-          {/* Phase 1: Intro */}
-          {turnPhase === 'intro' && (
+          {/* Phase 1: Select Player */}
+          {turnPhase === 'select-player' && (
             <motion.div
-              key="intro"
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.25 }}
-              className="flex-1 flex flex-col items-center justify-center text-center px-4"
+              key="select"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex-1 flex flex-col"
             >
-              <p className="text-white/60 text-base mb-4">C'est au tour de</p>
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold text-white mb-1">
+                  Qui pose la question ?
+                </h2>
+                <p className="text-white/50 text-sm">
+                  {availablePlayers.length} joueur{availablePlayers.length > 1 ? 's' : ''} restant{availablePlayers.length > 1 ? 's' : ''}
+                </p>
+              </div>
 
-              <PlayerAvatar
-                name={currentPlayer.name}
-                color={currentPlayer.color}
-                size="xl"
-                showName
-                className="mb-8"
-              />
-
-              <Button
-                onClick={handleStartTurn}
-                fullWidth
-                size="lg"
-                color={modeConfig?.color}
-                className="max-w-xs"
-              >
-                C'est moi !
-              </Button>
+              <div className="flex-1 flex items-center justify-center">
+                <div className="grid grid-cols-3 gap-3 max-w-sm">
+                  {state.players.map((player, index) => {
+                    const hasPlayed = playedPlayerIds.has(player.id);
+                    return (
+                      <motion.button
+                        key={player.id}
+                        whileTap={{ scale: hasPlayed ? 1 : 0.95 }}
+                        onClick={() => handleSelectPlayer(index)}
+                        disabled={hasPlayed}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-opacity ${
+                          hasPlayed
+                            ? 'opacity-30 cursor-not-allowed'
+                            : 'bg-surface-light active:bg-surface'
+                        }`}
+                      >
+                        <PlayerAvatar
+                          name={player.name}
+                          color={player.color}
+                          size="lg"
+                        />
+                        <span className="text-white text-sm font-medium truncate max-w-[80px]">
+                          {player.name}
+                        </span>
+                        {hasPlayed && (
+                          <span className="text-green-400 text-xs">Joue</span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
             </motion.div>
           )}
 
           {/* Phase 2: Show Question */}
-          {turnPhase === 'question' && (
+          {turnPhase === 'question' && selectedPlayer && (
             <motion.div
               key="question"
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.25 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="flex-1 flex flex-col items-center justify-center px-2"
             >
-              <motion.div
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.1 }}
-                className="w-full max-w-md mb-6"
-              >
-                <Card className="p-5">
-                  <p className="text-white/40 text-xs uppercase tracking-wide mb-3 text-center">
-                    Pose cette question a voix haute
-                  </p>
-                  <p className="text-white text-xl font-medium text-center leading-relaxed">
-                    {state.currentQuestion?.text}
-                  </p>
-                </Card>
-              </motion.div>
+              <div className="text-center mb-4">
+                <PlayerAvatar
+                  name={selectedPlayer.name}
+                  color={selectedPlayer.color}
+                  size="lg"
+                  showName
+                />
+              </div>
 
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="text-white/50 text-sm mb-6 text-center"
-              >
+              <Card className="w-full max-w-md p-5 mb-6">
+                <p className="text-white/40 text-xs uppercase tracking-wide mb-3 text-center">
+                  Pose cette question a voix haute
+                </p>
+                <p className="text-white text-xl font-medium text-center leading-relaxed">
+                  {state.currentQuestion?.text}
+                </p>
+              </Card>
+
+              <p className="text-white/40 text-sm mb-6 text-center">
                 Attends qu'un joueur reponde...
-              </motion.p>
+              </p>
 
               <Button
                 onClick={handleQuestionAsked}
@@ -240,68 +253,14 @@ export function PlayerTurnScreen() {
             </motion.div>
           )}
 
-          {/* Phase 3: Name Input */}
-          {turnPhase === 'name-input' && (
-            <motion.div
-              key="name-input"
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.25 }}
-              className="flex-1 flex flex-col items-center justify-center px-4"
-            >
-              <motion.div
-                initial={{ scale: 0.95 }}
-                animate={{ scale: 1 }}
-                className="text-center mb-6"
-              >
-                <span className="text-4xl mb-3 block">👤</span>
-                <h2 className="text-xl font-bold text-white mb-1">
-                  Qui a repondu ?
-                </h2>
-                <p className="text-white/50 text-sm">
-                  Entre le prenom du joueur
-                </p>
-              </motion.div>
-
-              <div className="w-full max-w-xs mb-6">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={responderName}
-                  onChange={e => setResponderName(e.target.value)}
-                  onKeyDown={handleNameKeyDown}
-                  placeholder="Prenom..."
-                  maxLength={20}
-                  className="w-full px-5 py-4 text-lg text-center rounded-2xl bg-surface-light text-white placeholder-white/30 border-2 border-transparent focus:border-white/20 outline-none transition-colors"
-                  autoComplete="off"
-                  autoCapitalize="words"
-                />
-              </div>
-
-              <Button
-                onClick={handleNameSubmit}
-                disabled={!responderName.trim()}
-                fullWidth
-                size="lg"
-                color={modeConfig?.color}
-                className="max-w-xs"
-              >
-                Continuer
-              </Button>
-            </motion.div>
-          )}
-
-          {/* Phase 4: Coin Choice */}
+          {/* Phase 3: Coin Choice */}
           {turnPhase === 'coin-choice' && (
             <motion.div
               key="coin-choice"
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.25 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="flex-1 flex flex-col items-center justify-center px-4"
             >
               <div className="text-center mb-6">
@@ -310,7 +269,7 @@ export function PlayerTurnScreen() {
                   Pile ou Face ?
                 </h2>
                 <p className="text-white/50 text-sm">
-                  {responderName} va savoir ou non la question
+                  Gagne pour garder la question secrete
                 </p>
               </div>
 
@@ -320,22 +279,17 @@ export function PlayerTurnScreen() {
                   selected={state.coinFlipChoice}
                 />
               </div>
-
-              <p className="text-white/30 text-xs mt-4 text-center">
-                Choisis pour lancer automatiquement
-              </p>
             </motion.div>
           )}
 
-          {/* Phase 5: Coin Flip Animation */}
+          {/* Phase 4: Coin Flip Animation */}
           {turnPhase === 'coin-flip' && (
             <motion.div
               key="coin-flip"
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1 }}
               className="flex-1 flex flex-col items-center justify-center"
             >
               <CoinFlip
@@ -346,21 +300,20 @@ export function PlayerTurnScreen() {
             </motion.div>
           )}
 
-          {/* Phase 6: Result */}
+          {/* Phase 5: Result */}
           {turnPhase === 'result' && (
             <motion.div
               key="result"
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.25 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
               className="flex-1 flex flex-col items-center justify-center text-center px-4"
             >
               <motion.div
-                initial={{ scale: 0 }}
+                initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 className="mb-4"
               >
                 <span className="text-6xl">
@@ -368,75 +321,92 @@ export function PlayerTurnScreen() {
                 </span>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="mb-4"
-              >
-                <h2 className={`text-2xl font-bold mb-1 ${
-                  playerWon ? 'text-green-400' : 'text-orange-400'
-                }`}>
-                  {playerWon ? 'Tu as gagne !' : 'Perdu !'}
-                </h2>
-                <p className="text-white/50 text-sm">
-                  {state.coinFlipChoice === 'heads' ? 'PILE' : 'FACE'} vs {state.coinFlipResult === 'heads' ? 'PILE' : 'FACE'}
-                </p>
-              </motion.div>
+              <h2 className={`text-2xl font-bold mb-2 ${
+                playerWon ? 'text-green-400' : 'text-orange-400'
+              }`}>
+                {playerWon ? 'Tu as gagne !' : 'Perdu !'}
+              </h2>
 
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="w-full max-w-md mb-6"
-              >
-                {mustRevealQuestion ? (
-                  <Card className="p-4 border-2 border-orange-500/30">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <span className="text-lg">📢</span>
-                      <p className="text-orange-400 text-sm font-medium">
-                        {responderName} doit connaitre la question !
-                      </p>
-                    </div>
-                    <p className="text-white text-lg font-medium text-center">
-                      {state.currentQuestion?.text}
+              <p className="text-white/50 text-sm mb-6">
+                {state.coinFlipChoice === 'heads' ? 'PILE' : 'FACE'} vs {state.coinFlipResult === 'heads' ? 'PILE' : 'FACE'}
+              </p>
+
+              {!playerWon && state.currentQuestion && (
+                <Card className="w-full max-w-md p-4 mb-6 border-2 border-orange-500/30">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <span className="text-lg">📢</span>
+                    <p className="text-orange-400 text-sm font-medium">
+                      Revele la question !
                     </p>
-                  </Card>
-                ) : (
-                  <Card className="p-4 border-2 border-green-500/30">
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-lg">🤫</span>
-                      <p className="text-green-400 text-sm font-medium">
-                        La question reste secrete !
-                      </p>
-                    </div>
-                    <p className="text-white/50 text-sm mt-2 text-center">
-                      {responderName} ne saura jamais ce qu'il a repondu
-                    </p>
-                  </Card>
-                )}
-              </motion.div>
+                  </div>
+                  <p className="text-white text-lg font-medium text-center">
+                    {state.currentQuestion.text}
+                  </p>
+                </Card>
+              )}
 
               {playerWon && (
-                <motion.p
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.35, type: 'spring' }}
-                  className="text-yellow-400 font-bold text-base mb-4"
-                >
-                  +1 point pour {currentPlayer.name} !
-                </motion.p>
+                <Card className="w-full max-w-md p-4 mb-6 border-2 border-green-500/30">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-lg">🤫</span>
+                    <p className="text-green-400 text-sm font-medium">
+                      La question reste secrete !
+                    </p>
+                  </div>
+                </Card>
               )}
 
               <Button
-                onClick={handleContinue}
+                onClick={handleNext}
                 fullWidth
                 size="lg"
                 color={modeConfig?.color}
                 className="max-w-xs"
               >
-                {playersRemaining > 1 ? 'Tour suivant' : 'Voir les resultats'}
+                Suivant
               </Button>
+            </motion.div>
+          )}
+
+          {/* Phase 6: Round Complete */}
+          {turnPhase === 'round-complete' && (
+            <motion.div
+              key="round-complete"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex-1 flex flex-col items-center justify-center text-center px-4"
+            >
+              <span className="text-6xl mb-4">🏁</span>
+
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Tour {roundNumber} termine !
+              </h2>
+
+              <p className="text-white/50 mb-8">
+                Tous les joueurs ont pose leur question
+              </p>
+
+              <div className="w-full max-w-xs space-y-3">
+                <Button
+                  onClick={handleNewRound}
+                  fullWidth
+                  size="lg"
+                  color={modeConfig?.color}
+                >
+                  Nouveau tour
+                </Button>
+
+                <Button
+                  onClick={handleQuit}
+                  fullWidth
+                  size="lg"
+                  variant="secondary"
+                >
+                  Terminer la partie
+                </Button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
