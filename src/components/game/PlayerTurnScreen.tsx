@@ -167,7 +167,7 @@ export function PlayerTurnScreen() {
             >
               <div className="text-center mb-4">
                 <h2 className="text-xl font-bold text-white mb-1">
-                  Qui pose la question ?
+                  A qui la question ?
                 </h2>
                 <p className="text-white/50 text-sm">
                   {availablePlayers.length} joueur{availablePlayers.length > 1 ? 's' : ''} restant{availablePlayers.length > 1 ? 's' : ''}
@@ -220,6 +220,7 @@ export function PlayerTurnScreen() {
               className="flex-1 flex flex-col items-center justify-center px-2"
             >
               <div className="text-center mb-4">
+                <p className="text-white/50 text-sm mb-2">Question pour</p>
                 <PlayerAvatar
                   name={selectedPlayer.name}
                   color={selectedPlayer.color}
@@ -230,7 +231,7 @@ export function PlayerTurnScreen() {
 
               <Card className="w-full max-w-md p-5 mb-6">
                 <p className="text-white/40 text-xs uppercase tracking-wide mb-3 text-center">
-                  Pose cette question a voix haute
+                  Reponds a voix haute
                 </p>
                 <p className="text-white text-xl font-medium text-center leading-relaxed">
                   {state.currentQuestion?.text}
@@ -238,7 +239,7 @@ export function PlayerTurnScreen() {
               </Card>
 
               <p className="text-white/40 text-sm mb-6 text-center">
-                Attends qu'un joueur reponde...
+                Les autres ne voient pas la question !
               </p>
 
               <Button
@@ -248,7 +249,7 @@ export function PlayerTurnScreen() {
                 color={modeConfig?.color}
                 className="max-w-xs"
               >
-                Quelqu'un a repondu !
+                J'ai repondu !
               </Button>
             </motion.div>
           )}
@@ -334,9 +335,9 @@ export function PlayerTurnScreen() {
               {!playerWon && state.currentQuestion && (
                 <Card className="w-full max-w-md p-4 mb-6 border-2 border-orange-500/30">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-lg">📢</span>
+                    <span className="text-lg">👀</span>
                     <p className="text-orange-400 text-sm font-medium">
-                      Revele la question !
+                      Tout le monde decouvre la question !
                     </p>
                   </div>
                   <p className="text-white text-lg font-medium text-center">
@@ -350,7 +351,7 @@ export function PlayerTurnScreen() {
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-lg">🤫</span>
                     <p className="text-green-400 text-sm font-medium">
-                      La question reste secrete !
+                      Personne ne saura la question !
                     </p>
                   </div>
                 </Card>
