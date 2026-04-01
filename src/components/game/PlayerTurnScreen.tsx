@@ -9,7 +9,7 @@ import { useGame } from '../../hooks/useGame';
 import { getQuestionsForMode } from '../../data';
 import { pickRandomExcluding } from '../../utils/shuffle';
 
-type TurnPhase = 'select-player' | 'question' | 'coin-choice' | 'coin-flip' | 'result' | 'round-complete';
+type TurnPhase = 'question' | 'coin-choice' | 'coin-flip' | 'result' | 'round-complete';
 
 export function PlayerTurnScreen() {
   const {
@@ -21,8 +21,8 @@ export function PlayerTurnScreen() {
     resetGame,
   } = useGame();
 
-  const [turnPhase, setTurnPhase] = useState<TurnPhase>('select-player');
-  const [selectedPlayerIndex, setSelectedPlayerIndex] = useState<number | null>(null);
+  const [turnPhase, setTurnPhase] = useState<TurnPhase>('question');
+  const [selectedPlayerIndex, setSelectedPlayerIndex] = useState<number>(-1);
   const [playedPlayerIds, setPlayedPlayerIds] = useState<Set<string>>(new Set());
   const [roundNumber, setRoundNumber] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -30,7 +30,7 @@ export function PlayerTurnScreen() {
   const [usedQuestionIds, setUsedQuestionIds] = useState<Set<number>>(new Set());
 
   const modeConfig = getModeConfig();
-  const selectedPlayer = selectedPlayerIndex !== null ? state.players[selectedPlayerIndex] : null;
+  const selectedPlayer = selectedPlayerIndex >= 0 ? state.players[selectedPlayerIndex] : null;
 
   // Players who haven't played this round
   const availablePlayers = state.players.filter(p => !playedPlayerIds.has(p.id));
@@ -38,6 +38,21 @@ export function PlayerTurnScreen() {
   // Player wins = question stays secret
   // Player loses = must reveal question
   const playerWon = state.coinFlipChoice === state.coinFlipResult;
+
+  // Pick random player on mount or when needed
+  const pickRandomPlayer = useCallback(() => {
+    const available = state.players.filter(p => !playedPlayerIds.has(p.id));
+    if (available.length === 0) return -1;
+    const randomPlayer = available[Math.floor(Math.random() * available.length)];
+    return state.players.findIndex(p => p.id === randomPlayer.id);
+  }, [state.players, playedPlayerIds]);
+
+  // Initial random player selection
+  useEffect(() => {
+    if (selectedPlayerIndex < 0 && availablePlayers.length > 0) {
+      setSelectedPlayerIndex(pickRandomPlayer());
+    }
+  }, [selectedPlayerIndex, availablePlayers.length, pickRandomPlayer]);
 
   const prepareQuestion = useCallback(() => {
     if (!state.mode) return;
@@ -60,14 +75,6 @@ export function PlayerTurnScreen() {
       setUsedQuestionIds(prev => new Set([...prev, question.id]));
     }
   }, [state.mode, state.players, selectedPlayer, selectedPlayerIndex, usedQuestionIds, setQuestion]);
-
-  const handleSelectPlayer = (index: number) => {
-    const player = state.players[index];
-    if (playedPlayerIds.has(player.id)) return; // Already played
-
-    setSelectedPlayerIndex(index);
-    setTurnPhase('question');
-  };
 
   useEffect(() => {
     if (turnPhase === 'question' && selectedPlayer && !state.currentQuestion) {
@@ -100,30 +107,38 @@ export function PlayerTurnScreen() {
 
   const handleNext = () => {
     // Mark current player as played
-    if (selectedPlayer) {
-      setPlayedPlayerIds(prev => new Set([...prev, selectedPlayer.id]));
-    }
+    const newPlayedIds = new Set([...playedPlayerIds, selectedPlayer?.id || '']);
+    setPlayedPlayerIds(newPlayedIds);
 
     // Reset turn state
-    setSelectedPlayerIndex(null);
     setLocalResult(null);
     setQuestion(null as any);
     setCoinFlipChoice(null as any);
     setCoinFlipResult(null as any);
 
     // Check if all players have played
-    const newPlayedIds = new Set([...playedPlayerIds, selectedPlayer?.id || '']);
     if (newPlayedIds.size >= state.players.length) {
       setTurnPhase('round-complete');
     } else {
-      setTurnPhase('select-player');
+      // Pick next random player
+      const available = state.players.filter(p => !newPlayedIds.has(p.id));
+      const randomPlayer = available[Math.floor(Math.random() * available.length)];
+      const nextIndex = state.players.findIndex(p => p.id === randomPlayer.id);
+      setSelectedPlayerIndex(nextIndex);
+      setTurnPhase('question');
     }
   };
 
   const handleNewRound = () => {
-    setPlayedPlayerIds(new Set());
+    const newPlayedIds = new Set<string>();
+    setPlayedPlayerIds(newPlayedIds);
     setRoundNumber(prev => prev + 1);
-    setTurnPhase('select-player');
+    // Pick random player for new round
+    const randomPlayer = state.players[Math.floor(Math.random() * state.players.length)];
+    const nextIndex = state.players.findIndex(p => p.id === randomPlayer.id);
+    setSelectedPlayerIndex(nextIndex);
+    setQuestion(null as any);
+    setTurnPhase('question');
   };
 
   const handleQuit = () => {
@@ -155,61 +170,7 @@ export function PlayerTurnScreen() {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* Phase 1: Select Player */}
-          {turnPhase === 'select-player' && (
-            <motion.div
-              key="select"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex-1 flex flex-col"
-            >
-              <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-white mb-1">
-                  A qui la question ?
-                </h2>
-                <p className="text-white/50 text-sm">
-                  {availablePlayers.length} joueur{availablePlayers.length > 1 ? 's' : ''} restant{availablePlayers.length > 1 ? 's' : ''}
-                </p>
-              </div>
-
-              <div className="flex-1 flex items-center justify-center">
-                <div className="grid grid-cols-3 gap-3 max-w-sm">
-                  {state.players.map((player, index) => {
-                    const hasPlayed = playedPlayerIds.has(player.id);
-                    return (
-                      <motion.button
-                        key={player.id}
-                        whileTap={{ scale: hasPlayed ? 1 : 0.95 }}
-                        onClick={() => handleSelectPlayer(index)}
-                        disabled={hasPlayed}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-opacity ${
-                          hasPlayed
-                            ? 'opacity-30 cursor-not-allowed'
-                            : 'bg-surface-light active:bg-surface'
-                        }`}
-                      >
-                        <PlayerAvatar
-                          name={player.name}
-                          color={player.color}
-                          size="lg"
-                        />
-                        <span className="text-white text-sm font-medium truncate max-w-[80px]">
-                          {player.name}
-                        </span>
-                        {hasPlayed && (
-                          <span className="text-green-400 text-xs">Joue</span>
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Phase 2: Show Question */}
+          {/* Phase 1: Show Question */}
           {turnPhase === 'question' && selectedPlayer && (
             <motion.div
               key="question"
