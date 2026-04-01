@@ -20,6 +20,23 @@
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
+  box-sizing: border-box;
+}
+
+/* GPU acceleration for animations */
+.gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 html {
@@ -136,19 +153,21 @@ body {
   animation: shake 0.5s ease-in-out;
 }
 
-/* Card styles */
+/* Card styles - simplified for performance */
 .card {
-  background: linear-gradient(145deg, var(--color-surface) 0%, var(--color-surface-light) 100%);
+  background: var(--color-surface);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .card-interactive {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.15s ease-out;
 }
 
 .card-interactive:active {
-  transform: scale(0.98);
+  transform: scale(0.98) translateZ(0);
 }
 
 /* Input styles */

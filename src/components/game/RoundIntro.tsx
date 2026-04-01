@@ -18,9 +18,9 @@ export function RoundIntro() {
     <Screen>
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', duration: 0.5 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
           className="mb-8"
         >
           <div
@@ -49,19 +49,13 @@ export function RoundIntro() {
 
           {/* Show all players */}
           <div className="flex flex-wrap justify-center gap-2 mb-4">
-            {state.players.map((player, index) => (
-              <motion.div
+            {state.players.map((player) => (
+              <PlayerAvatar
                 key={player.id}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-              >
-                <PlayerAvatar
-                  name={player.name}
-                  color={player.color}
-                  size="sm"
-                />
-              </motion.div>
+                name={player.name}
+                color={player.color}
+                size="sm"
+              />
             ))}
           </div>
 

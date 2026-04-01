@@ -84,7 +84,7 @@ export function WheelOfFortune({
 
     const randomIndex = Math.floor(Math.random() * items.length);
     const targetAngle = 360 - (randomIndex * segmentAngle + segmentAngle / 2);
-    const spins = 5 + Math.floor(Math.random() * 3);
+    const spins = 3 + Math.floor(Math.random() * 2);
     const finalRotation = rotation + spins * 360 + targetAngle;
 
     setRotation(finalRotation);
@@ -92,7 +92,7 @@ export function WheelOfFortune({
     setTimeout(() => {
       setIsSpinning(false);
       onResult(items[randomIndex]);
-    }, 4000);
+    }, 2500);
   };
 
   return (
@@ -113,16 +113,19 @@ export function WheelOfFortune({
         <motion.div
           animate={{ rotate: rotation }}
           transition={{
-            duration: 4,
+            duration: 2.5,
             ease: [0.17, 0.67, 0.12, 0.99],
           }}
-          style={{ transformOrigin: 'center center' }}
+          style={{
+            transformOrigin: 'center center',
+            willChange: 'transform',
+          }}
         >
           <canvas
             ref={canvasRef}
-            width={300}
-            height={300}
-            className="rounded-full shadow-2xl"
+            width={280}
+            height={280}
+            className="rounded-full"
           />
         </motion.div>
       </div>

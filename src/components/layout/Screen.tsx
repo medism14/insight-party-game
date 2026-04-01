@@ -12,9 +12,9 @@ interface ScreenProps {
 }
 
 const pageVariants = {
-  initial: { opacity: 0, x: 50 },
-  animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -50 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 export function Screen({
@@ -31,7 +31,7 @@ export function Screen({
       animate="animate"
       exit="exit"
       variants={pageVariants}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
       className={clsx(
         'screen flex flex-col min-h-screen bg-background',
         className
@@ -86,7 +86,7 @@ export function ScreenTransition({ children, screenKey }: { children: ReactNode;
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -50 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
         className="flex-1 flex flex-col"
       >
         {children}

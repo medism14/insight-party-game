@@ -8,23 +8,24 @@ interface CoinFlipProps {
 
 export function CoinFlip({ isAnimating, result, choice }: CoinFlipProps) {
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="relative w-40 h-40">
+    <div className="flex flex-col items-center gap-4">
+      <div className="relative w-32 h-32">
         <motion.div
-          className="w-full h-full rounded-full flex items-center justify-center text-6xl shadow-2xl"
+          className="w-full h-full rounded-full flex items-center justify-center text-5xl"
           style={{
-            background: 'linear-gradient(145deg, #ffd700, #b8860b)',
-            border: '4px solid #daa520',
+            background: '#ffd700',
+            border: '3px solid #daa520',
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
           }}
           animate={isAnimating ? {
-            rotateY: [0, 1800],
-            scale: [1, 1.2, 1],
+            rotateY: [0, 1080],
           } : {
             rotateY: result === 'tails' ? 180 : 0,
           }}
           transition={{
-            duration: isAnimating ? 2 : 0.3,
-            ease: isAnimating ? [0.17, 0.67, 0.12, 0.99] : 'easeOut',
+            duration: isAnimating ? 1.5 : 0.2,
+            ease: 'easeOut',
           }}
         >
           <AnimatePresence mode="wait">
@@ -58,15 +59,6 @@ export function CoinFlip({ isAnimating, result, choice }: CoinFlipProps) {
           </AnimatePresence>
         </motion.div>
 
-        {/* Shine effect */}
-        <motion.div
-          className="absolute inset-0 rounded-full pointer-events-none"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%)',
-          }}
-          animate={isAnimating ? { opacity: [0.4, 0.8, 0.4] } : {}}
-          transition={{ duration: 0.5, repeat: isAnimating ? Infinity : 0 }}
-        />
       </div>
 
       {result && !isAnimating && (

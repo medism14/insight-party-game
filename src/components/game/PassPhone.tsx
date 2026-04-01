@@ -63,16 +63,11 @@ export function PassPhone() {
     <Screen>
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           className="mb-8"
         >
-          <motion.div
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 0.5, repeat: 2 }}
-          >
-            <span className="text-6xl">📱</span>
-          </motion.div>
+          <span className="text-5xl">📱</span>
         </motion.div>
 
         <motion.div

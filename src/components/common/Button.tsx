@@ -23,7 +23,7 @@ export function Button({
   className,
   color,
 }: ButtonProps) {
-  const baseStyles = 'font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2';
+  const baseStyles = 'font-semibold rounded-2xl transition-transform duration-100 flex items-center justify-center gap-2 will-change-transform';
 
   const sizeStyles = {
     sm: 'px-4 py-2 text-sm',
@@ -42,8 +42,7 @@ export function Button({
 
   return (
     <motion.button
-      whileTap={{ scale: disabled ? 1 : 0.95 }}
-      whileHover={{ scale: disabled ? 1 : 1.02 }}
+      whileTap={{ scale: disabled ? 1 : 0.97 }}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
       className={clsx(

@@ -32,8 +32,8 @@ const DEFAULT_COLORS = [
 
 export function ConfettiEffect({
   isActive,
-  duration = 3000,
-  particleCount = 150,
+  duration = 2000,
+  particleCount = 50,
   colors = DEFAULT_COLORS,
   onComplete,
 }: ConfettiEffectProps) {

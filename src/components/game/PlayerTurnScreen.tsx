@@ -12,9 +12,9 @@ import { pickRandomExcluding } from '../../utils/shuffle';
 type TurnPhase = 'intro' | 'question' | 'name-input' | 'coin-choice' | 'coin-flip' | 'result';
 
 const slideVariants = {
-  enter: { opacity: 0, y: 30 },
-  center: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
+  enter: { opacity: 0 },
+  center: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 export function PlayerTurnScreen() {
@@ -121,8 +121,8 @@ export function PlayerTurnScreen() {
       setLocalResult(result);
       setIsAnimating(false);
       setCoinFlipResult(result);
-      setTimeout(() => setTurnPhase('result'), 300);
-    }, 1800);
+      setTimeout(() => setTurnPhase('result'), 200);
+    }, 1500);
   }, [state.coinFlipChoice, setCoinFlipResult]);
 
   const handleContinue = () => {
@@ -304,25 +304,15 @@ export function PlayerTurnScreen() {
               transition={{ duration: 0.25 }}
               className="flex-1 flex flex-col items-center justify-center px-4"
             >
-              <motion.div
-                initial={{ y: -10 }}
-                animate={{ y: 0 }}
-                className="text-center mb-6"
-              >
-                <motion.span
-                  className="text-5xl mb-3 block"
-                  animate={{ rotateY: [0, 360] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                >
-                  🪙
-                </motion.span>
+              <div className="text-center mb-6">
+                <span className="text-5xl mb-3 block">🪙</span>
                 <h2 className="text-xl font-bold text-white mb-1">
                   Pile ou Face ?
                 </h2>
                 <p className="text-white/50 text-sm">
                   {responderName} va savoir ou non la question
                 </p>
-              </motion.div>
+              </div>
 
               <div className="w-full max-w-sm">
                 <CoinChoice
