@@ -1,56 +1,292 @@
-name: Deploy to GitHub Pages
+name: CI/CD - Frontend
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: frontend-cicd-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  ci:
+    name: CI - Lint & Build
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
       - name: Build
         run: npm run build
         env:
-          VITE_APP_NAME: ${{ vars.VITE_APP_NAME }}
-          VITE_APP_VERSION: ${{ vars.VITE_APP_VERSION }}
+          VITE_BASE_PATH: ${{ secrets.VITE_BASE_PATH }}
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: Security audit (warn on high)
+        run: npm audit --audit-level=high
+        continue-on-error: true
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
+      - name: Security audit (block on critical)
+        run: npm audit --audit-level=critical
 
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    name: Deploy to VPS
     runs-on: ubuntu-latest
-    needs: build
+    needs: ci
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Verify required secrets
+        run: |
+          set -euo pipefail
+
+          VPS_HOST="${{ secrets.VPS_HOST }}"
+          VPS_USERNAME="${{ secrets.VPS_USERNAME }}"
+          VPS_PASSWORD="${{ secrets.VPS_PASSWORD }}"
+          VPS_PORT="${{ secrets.VPS_PORT }}"
+          FRONTEND_PORT="${{ secrets.FRONTEND_PORT }}"
+
+          MISSING=()
+          [ -z "${VPS_HOST}" ] && MISSING+=("VPS_HOST")
+          [ -z "${VPS_USERNAME}" ] && MISSING+=("VPS_USERNAME")
+          [ -z "${VPS_PASSWORD}" ] && MISSING+=("VPS_PASSWORD")
+          [ -z "${VPS_PORT}" ] && MISSING+=("VPS_PORT")
+          [ -z "${FRONTEND_PORT}" ] && MISSING+=("FRONTEND_PORT")
+
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "Secrets manquants: ${MISSING[*]}"
+            exit 1
+          fi
+
+          echo "VITE_BASE_PATH est optionnel (par defaut: /)"
+          echo "Tous les secrets requis sont definis"
+
+      - name: Build and export Docker image
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --build-arg VITE_BASE_PATH="${{ secrets.VITE_BASE_PATH }}" \
+            --output "type=docker,dest=insight-frontend.tar" \
+            -t insight-frontend:latest \
+            .
+          gzip insight-frontend.tar
+          ls -lh insight-frontend.tar.gz
+          echo "Image Docker exportee"
+
+      - name: Verify deploy files
+        run: |
+          set -euo pipefail
+
+          for file in Dockerfile docker-compose.yml nginx.conf insight-frontend.tar.gz; do
+            if [ ! -f "${file}" ]; then
+              echo "Fichier manquant: ${file}"
+              exit 1
+            fi
+          done
+
+          echo "Fichiers de deploiement verifies"
+
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Verify VPS connection
+        run: |
+          set -euo pipefail
+
+          VPS_PORT="${{ secrets.VPS_PORT }}"
+          SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=password -o PubkeyAuthentication=no -o ConnectTimeout=20 -o ServerAliveInterval=10 -o ServerAliveCountMax=3"
+
+          CONNECTED=0
+          for attempt in 1 2 3 4 5; do
+            echo "Test SSH vers ${{ secrets.VPS_HOST }}:${VPS_PORT} (${attempt}/5)..."
+            if sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh ${SSH_OPTS} -p "${VPS_PORT}" "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}" "echo ok >/dev/null 2>&1"; then
+              CONNECTED=1
+              break
+            fi
+            sleep $((attempt * 5))
+          done
+
+          if [ "${CONNECTED}" -ne 1 ]; then
+            echo "Impossible de se connecter au VPS apres 5 tentatives"
+            exit 1
+          fi
+
+          echo "Connexion SSH VPS confirmee"
+
+      - name: Deploy to VPS - Prepare
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          FRONTEND_PORT: ${{ secrets.FRONTEND_PORT }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          timeout: 120s
+          command_timeout: 20m
+          envs: FRONTEND_PORT
+          script: |
+            set -e
+
+            mkdir -p /opt/insight-frontend
+            cd /opt/insight-frontend
+
+            echo "Arret des conteneurs existants..."
+            docker compose down --timeout 15 --remove-orphans 2>/dev/null || true
+
+            docker stop insight-frontend 2>/dev/null || true
+            docker rm -f insight-frontend 2>/dev/null || true
+
+            TARGET_PORT="${FRONTEND_PORT:-5182}"
+            CONTAINERS_ON_PORT=$(docker ps -q --filter "publish=${TARGET_PORT}" 2>/dev/null || true)
+            if [ -n "${CONTAINERS_ON_PORT}" ]; then
+              echo "Port ${TARGET_PORT} encore occupe, arret force..."
+              echo "${CONTAINERS_ON_PORT}" | xargs docker stop 2>/dev/null || true
+              echo "${CONTAINERS_ON_PORT}" | xargs docker rm -f 2>/dev/null || true
+            fi
+
+            sleep 3
+
+            echo "Suppression de l'ancienne image Docker..."
+            docker rmi -f insight-frontend:latest 2>/dev/null || true
+
+            echo "Nettoyage Docker..."
+            docker system prune -f 2>/dev/null || true
+
+            echo "Suppression de l'ancien export..."
+            rm -f insight-frontend.tar.gz
+
+            echo "Preparation terminee"
+
+      - name: Transfer files to VPS
+        run: |
+          set -euo pipefail
+
+          VPS_PORT="${{ secrets.VPS_PORT }}"
+          SCP_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=password -o PubkeyAuthentication=no -o ConnectTimeout=60 -o ServerAliveInterval=15 -o ServerAliveCountMax=3"
+
+          scp_with_retry() {
+            local src="$1" dest="$2" label="$3" ok=0
+            for attempt in 1 2 3 4 5; do
+              echo "Transfert ${label} (${attempt}/5)..."
+              if sshpass -p "${{ secrets.VPS_PASSWORD }}" scp ${SCP_OPTS} -P "${VPS_PORT}" "${src}" "${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:${dest}"; then
+                ok=1
+                break
+              fi
+              sleep $((attempt * 4))
+            done
+            [ "${ok}" -eq 1 ] || { echo "Echec transfert ${label} apres 5 tentatives"; exit 1; }
+          }
+
+          scp_with_retry "insight-frontend.tar.gz" "/opt/insight-frontend/" "image Docker"
+          scp_with_retry "docker-compose.yml" "/opt/insight-frontend/" "docker-compose.yml"
+
+      - name: Create or update .env on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          timeout: 120s
+          command_timeout: 5m
+          script: |
+            set -e
+            cd /opt/insight-frontend
+
+            printf 'FRONTEND_PORT=%s\n' '${{ secrets.FRONTEND_PORT }}' > .env
+
+            chmod 600 .env
+            echo ".env prod pret"
+
+      - name: Load image and deploy on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT }}
+          timeout: 120s
+          command_timeout: 40m
+          script: |
+            set -e
+
+            cd /opt/insight-frontend
+
+            if [ ! -f "insight-frontend.tar.gz" ]; then
+              echo "insight-frontend.tar.gz n'existe pas apres le transfert"
+              exit 1
+            fi
+
+            echo "Chargement de l'image Docker..."
+            gunzip -c insight-frontend.tar.gz | docker load
+
+            if ! docker images | grep -q "insight-frontend"; then
+              echo "L'image Docker n'a pas ete chargee correctement"
+              exit 1
+            fi
+            echo "Image Docker chargee avec succes"
+
+            echo "Demarrage du conteneur..."
+            docker compose --env-file .env up -d --force-recreate --no-build --remove-orphans
+
+            echo "Attente du demarrage (30s)..."
+            sleep 30
+
+            echo "Etat des conteneurs:"
+            docker compose ps
+
+            if ! docker compose ps | grep -qE "running|Running|Up"; then
+              echo "Le conteneur ne semble pas demarre"
+              docker compose logs insight-frontend --tail=50
+              exit 1
+            fi
+            echo "Conteneur demarre"
+
+            echo "Verification du health check (jusqu'a 3 min)..."
+            HEALTH_OK=0
+            for i in $(seq 1 36); do
+              if docker compose ps insight-frontend | grep -q "healthy"; then
+                HEALTH_OK=1
+                break
+              fi
+              echo "Frontend pas encore healthy... tentative ${i}/36"
+              sleep 5
+            done
+
+            rm -f insight-frontend.tar.gz
+
+            if [ "${HEALTH_OK}" -eq 1 ]; then
+              echo "Frontend healthy"
+            else
+              echo "Frontend non healthy apres 3 min"
+              docker compose logs insight-frontend --tail=50
+              exit 1
+            fi
+
+            echo "Deploiement termine avec succes"
