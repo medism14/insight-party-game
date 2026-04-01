@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Screen } from '../layout/Screen';
 import { Button } from '../common/Button';
@@ -8,8 +8,13 @@ import { CoinFlip, CoinChoice } from './CoinFlip';
 import { useGame } from '../../hooks/useGame';
 import { getQuestionsForMode } from '../../data';
 import { pickRandomExcluding } from '../../utils/shuffle';
+import type { Question } from '../../types/game';
 
-type TurnPhase = 'question' | 'coin-choice' | 'coin-flip' | 'result' | 'round-complete';
+type TurnPhase = 'loading' | 'question' | 'coin-choice' | 'coin-flip' | 'result' | 'round-complete';
+
+function getRandomIndex(length: number): number {
+  return Math.floor(Math.random() * length);
+}
 
 export function PlayerTurnScreen() {
   const {
@@ -21,66 +26,61 @@ export function PlayerTurnScreen() {
     resetGame,
   } = useGame();
 
-  const [turnPhase, setTurnPhase] = useState<TurnPhase>('question');
-  const [selectedPlayerIndex, setSelectedPlayerIndex] = useState<number>(-1);
   const [playedPlayerIds, setPlayedPlayerIds] = useState<Set<string>>(new Set());
   const [roundNumber, setRoundNumber] = useState(1);
+  const [usedQuestionIds, setUsedQuestionIds] = useState<Set<number>>(new Set());
+  const [turnPhase, setTurnPhase] = useState<TurnPhase>('loading');
   const [isAnimating, setIsAnimating] = useState(false);
   const [localResult, setLocalResult] = useState<'heads' | 'tails' | null>(null);
-  const [usedQuestionIds, setUsedQuestionIds] = useState<Set<number>>(new Set());
+  const [displayedQuestion, setDisplayedQuestion] = useState<Question | null>(null);
+
+  // Pick initial random player (only on first mount)
+  const [selectedPlayerIndex, setSelectedPlayerIndex] = useState<number>(() => {
+    if (state.players.length === 0) return -1;
+    return getRandomIndex(state.players.length);
+  });
 
   const modeConfig = getModeConfig();
   const selectedPlayer = selectedPlayerIndex >= 0 ? state.players[selectedPlayerIndex] : null;
-
-  // Players who haven't played this round
-  const availablePlayers = state.players.filter(p => !playedPlayerIds.has(p.id));
 
   // Player wins = question stays secret
   // Player loses = must reveal question
   const playerWon = state.coinFlipChoice === state.coinFlipResult;
 
-  // Pick random player on mount or when needed
-  const pickRandomPlayer = useCallback(() => {
-    const available = state.players.filter(p => !playedPlayerIds.has(p.id));
-    if (available.length === 0) return -1;
-    const randomPlayer = available[Math.floor(Math.random() * available.length)];
-    return state.players.findIndex(p => p.id === randomPlayer.id);
-  }, [state.players, playedPlayerIds]);
-
-  // Initial random player selection
-  useEffect(() => {
-    if (selectedPlayerIndex < 0 && availablePlayers.length > 0) {
-      setSelectedPlayerIndex(pickRandomPlayer());
-    }
-  }, [selectedPlayerIndex, availablePlayers.length, pickRandomPlayer]);
-
-  const prepareQuestion = useCallback(() => {
-    if (!state.mode) return;
+  // Prepare question for current player
+  const prepareQuestionForPlayer = useCallback(() => {
+    if (!state.mode || !selectedPlayer) return;
 
     const questions = getQuestionsForMode(state.mode);
     const question = pickRandomExcluding(questions, usedQuestionIds, q => q.id);
 
     if (question) {
       let text = question.text;
-      if (selectedPlayer && text.includes('{player}')) {
+      if (text.includes('{player}')) {
         text = text.replace(/{player}/g, selectedPlayer.name);
       }
       if (text.includes('{player1}') || text.includes('{player2}')) {
         const otherPlayers = state.players.filter((_, i) => i !== selectedPlayerIndex);
-        const shuffled = [...otherPlayers].sort(() => Math.random() - 0.5);
-        text = text.replace(/{player1}/g, shuffled[0]?.name || '');
-        text = text.replace(/{player2}/g, shuffled[1]?.name || '');
+        const idx1 = getRandomIndex(otherPlayers.length);
+        let idx2 = getRandomIndex(otherPlayers.length);
+        if (idx2 === idx1 && otherPlayers.length > 1) {
+          idx2 = (idx1 + 1) % otherPlayers.length;
+        }
+        text = text.replace(/{player1}/g, otherPlayers[idx1]?.name || '');
+        text = text.replace(/{player2}/g, otherPlayers[idx2]?.name || '');
       }
-      setQuestion({ ...question, text });
+      const newQuestion = { ...question, text };
+      setDisplayedQuestion(newQuestion);
+      setQuestion(newQuestion);
       setUsedQuestionIds(prev => new Set([...prev, question.id]));
     }
+    setTurnPhase('question');
   }, [state.mode, state.players, selectedPlayer, selectedPlayerIndex, usedQuestionIds, setQuestion]);
 
-  useEffect(() => {
-    if (turnPhase === 'question' && selectedPlayer && !state.currentQuestion) {
-      prepareQuestion();
-    }
-  }, [turnPhase, selectedPlayer, state.currentQuestion, prepareQuestion]);
+  // Start the game when component loads
+  const handleStart = useCallback(() => {
+    prepareQuestionForPlayer();
+  }, [prepareQuestionForPlayer]);
 
   const handleQuestionAsked = () => {
     setTurnPhase('coin-choice');
@@ -88,10 +88,10 @@ export function PlayerTurnScreen() {
 
   const handleCoinChoice = (choice: 'heads' | 'tails') => {
     setCoinFlipChoice(choice);
-    setTimeout(() => handleFlip(choice), 150);
+    setTimeout(() => handleFlip(), 150);
   };
 
-  const handleFlip = useCallback((_choice: 'heads' | 'tails') => {
+  const handleFlip = useCallback(() => {
     setIsAnimating(true);
     setTurnPhase('coin-flip');
 
@@ -112,9 +112,10 @@ export function PlayerTurnScreen() {
 
     // Reset turn state
     setLocalResult(null);
-    setQuestion(null as any);
-    setCoinFlipChoice(null as any);
-    setCoinFlipResult(null as any);
+    setDisplayedQuestion(null);
+    setQuestion(null as unknown as Question);
+    setCoinFlipChoice(null as unknown as 'heads' | 'tails');
+    setCoinFlipResult(null as unknown as 'heads' | 'tails');
 
     // Check if all players have played
     if (newPlayedIds.size >= state.players.length) {
@@ -122,23 +123,22 @@ export function PlayerTurnScreen() {
     } else {
       // Pick next random player
       const available = state.players.filter(p => !newPlayedIds.has(p.id));
-      const randomPlayer = available[Math.floor(Math.random() * available.length)];
+      const randomPlayer = available[getRandomIndex(available.length)];
       const nextIndex = state.players.findIndex(p => p.id === randomPlayer.id);
       setSelectedPlayerIndex(nextIndex);
-      setTurnPhase('question');
+      setTurnPhase('loading');
     }
   };
 
   const handleNewRound = () => {
-    const newPlayedIds = new Set<string>();
-    setPlayedPlayerIds(newPlayedIds);
+    setPlayedPlayerIds(new Set<string>());
     setRoundNumber(prev => prev + 1);
+    setDisplayedQuestion(null);
     // Pick random player for new round
-    const randomPlayer = state.players[Math.floor(Math.random() * state.players.length)];
-    const nextIndex = state.players.findIndex(p => p.id === randomPlayer.id);
+    const nextIndex = getRandomIndex(state.players.length);
     setSelectedPlayerIndex(nextIndex);
-    setQuestion(null as any);
-    setTurnPhase('question');
+    setQuestion(null as unknown as Question);
+    setTurnPhase('loading');
   };
 
   const handleQuit = () => {
@@ -170,6 +170,38 @@ export function PlayerTurnScreen() {
         </div>
 
         <AnimatePresence mode="wait">
+          {/* Loading: Prepare question */}
+          {turnPhase === 'loading' && selectedPlayer && (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex-1 flex flex-col items-center justify-center px-2"
+            >
+              <div className="text-center mb-6">
+                <p className="text-white/50 text-sm mb-2">C'est au tour de</p>
+                <PlayerAvatar
+                  name={selectedPlayer.name}
+                  color={selectedPlayer.color}
+                  size="xl"
+                  showName
+                />
+              </div>
+
+              <Button
+                onClick={handleStart}
+                fullWidth
+                size="lg"
+                color={modeConfig?.color}
+                className="max-w-xs"
+              >
+                Voir ma question
+              </Button>
+            </motion.div>
+          )}
+
           {/* Phase 1: Show Question */}
           {turnPhase === 'question' && selectedPlayer && (
             <motion.div
@@ -195,7 +227,7 @@ export function PlayerTurnScreen() {
                   Lis et reponds a voix haute
                 </p>
                 <p className="text-white text-xl font-medium text-center leading-relaxed">
-                  {state.currentQuestion?.text}
+                  {displayedQuestion?.text || state.currentQuestion?.text}
                 </p>
               </Card>
 
@@ -215,7 +247,7 @@ export function PlayerTurnScreen() {
             </motion.div>
           )}
 
-          {/* Phase 3: Coin Choice */}
+          {/* Phase 2: Coin Choice */}
           {turnPhase === 'coin-choice' && (
             <motion.div
               key="coin-choice"
@@ -244,7 +276,7 @@ export function PlayerTurnScreen() {
             </motion.div>
           )}
 
-          {/* Phase 4: Coin Flip Animation */}
+          {/* Phase 3: Coin Flip Animation */}
           {turnPhase === 'coin-flip' && (
             <motion.div
               key="coin-flip"
@@ -262,7 +294,7 @@ export function PlayerTurnScreen() {
             </motion.div>
           )}
 
-          {/* Phase 5: Result */}
+          {/* Phase 4: Result */}
           {turnPhase === 'result' && (
             <motion.div
               key="result"
@@ -293,7 +325,7 @@ export function PlayerTurnScreen() {
                 {state.coinFlipChoice === 'heads' ? 'PILE' : 'FACE'} vs {state.coinFlipResult === 'heads' ? 'PILE' : 'FACE'}
               </p>
 
-              {!playerWon && state.currentQuestion && (
+              {!playerWon && (displayedQuestion || state.currentQuestion) && (
                 <Card className="w-full max-w-md p-4 mb-6 border-2 border-orange-500/30">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="text-lg">👀</span>
@@ -302,7 +334,7 @@ export function PlayerTurnScreen() {
                     </p>
                   </div>
                   <p className="text-white text-lg font-medium text-center">
-                    {state.currentQuestion.text}
+                    {displayedQuestion?.text || state.currentQuestion?.text}
                   </p>
                 </Card>
               )}
@@ -330,7 +362,7 @@ export function PlayerTurnScreen() {
             </motion.div>
           )}
 
-          {/* Phase 6: Round Complete */}
+          {/* Phase 5: Round Complete */}
           {turnPhase === 'round-complete' && (
             <motion.div
               key="round-complete"
