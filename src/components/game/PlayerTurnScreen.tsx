@@ -231,7 +231,7 @@ export function PlayerTurnScreen() {
 
               <Card className="w-full max-w-md p-5 mb-6">
                 <p className="text-white/40 text-xs uppercase tracking-wide mb-3 text-center">
-                  Reponds a voix haute
+                  Lis et reponds a voix haute
                 </p>
                 <p className="text-white text-xl font-medium text-center leading-relaxed">
                   {state.currentQuestion?.text}
@@ -249,7 +249,7 @@ export function PlayerTurnScreen() {
                 color={modeConfig?.color}
                 className="max-w-xs"
               >
-                J'ai repondu !
+                Pile ou Face
               </Button>
             </motion.div>
           )}
