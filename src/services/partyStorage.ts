@@ -1,5 +1,5 @@
 import type { Party, PartyGame, PartyPlayer } from '../types/party';
-import { generatePartyId, generateId } from '../types/party';
+import { generateId } from '../types/party';
 import { getNextColor } from '../utils/colors';
 import {
   readPersistentString,
@@ -24,7 +24,7 @@ export function saveParties(parties: Party[]): void {
 
 export function createParty(name: string): Party {
   const party: Party = {
-    id: generatePartyId(),
+    id: generateId(),
     name,
     createdAt: Date.now(),
     players: [],

@@ -177,4 +177,59 @@ export const hoootQuestions: Question[] = [
   { id: 153, text: "Qui a eu le plus de relations en meme temps ?", category: "Experiences" },
   { id: 154, text: "Qui ici a fait la chose la plus folle par attirance ?", category: "Experiences" },
   { id: 155, text: "Qui a eu le rendez-vous le plus hot ?", category: "Experiences" },
+
+  // ALCHIMIE
+  { id: 156, text: "Qui ici a l'alchimie la plus evidente avec quelqu'un du groupe ?", category: "Alchimie" },
+  { id: 157, text: "Qui serait le/la plus difficile a oublier apres une seule nuit ?", category: "Alchimie" },
+  { id: 158, text: "Qui ici provoque le plus facilement des papillons ?", category: "Alchimie" },
+  { id: 159, text: "Qui serait le/la plus troublant(e) en tete-a-tete ?", category: "Alchimie" },
+  { id: 160, text: "Qui ici a la facon la plus dangereuse de sourire ?", category: "Alchimie" },
+  { id: 161, text: "Qui serait le/la plus dur(e) a regarder dans les yeux trop longtemps ?", category: "Alchimie" },
+  { id: 162, text: "Qui ici sait le mieux installer une tension sans parler ?", category: "Alchimie" },
+  { id: 163, text: "Qui serait le/la plus addictif(ve) sentimentalement ?", category: "Alchimie" },
+  { id: 164, text: "Qui ici peut charmer juste avec sa voix ?", category: "Alchimie" },
+  { id: 165, text: "Qui serait le/la plus renversant(e) apres un simple compliment ?", category: "Alchimie" },
+
+  // AUDACE 2
+  { id: 166, text: "Qui ici assumerait le plus facilement un crush interdit ?", category: "Audace 2" },
+  { id: 167, text: "Qui serait le/la plus susceptible de faire monter la temperature juste pour jouer ?", category: "Audace 2" },
+  { id: 168, text: "Qui ici oserait proposer le premier rendez-vous le plus direct ?", category: "Audace 2" },
+  { id: 169, text: "Qui serait le/la plus a l'aise pour seduire en public ?", category: "Audace 2" },
+  { id: 170, text: "Qui ici franchirait la ligne juste par curiosite ?", category: "Audace 2" },
+  { id: 171, text: "Qui serait le/la plus susceptible d'embrasser quelqu'un sur un coup de tete ?", category: "Audace 2" },
+  { id: 172, text: "Qui ici joue le plus avec son pouvoir de seduction ?", category: "Audace 2" },
+  { id: 173, text: "Qui serait le/la plus susceptible de faire monter la jalousie sans le vouloir ?", category: "Audace 2" },
+  { id: 174, text: "Qui ici pourrait envoyer le message le plus os(e) ?", category: "Audace 2" },
+  { id: 175, text: "Qui serait le/la plus difficile a suivre dans une nuit un peu trop folle ?", category: "Audace 2" },
+
+  // JEUX
+  { id: 176, text: "Qui ici aime le plus tester les limites en flirt ?", category: "Jeux" },
+  { id: 177, text: "Qui serait le/la plus susceptible de souffler le chaud et le froid ?", category: "Jeux" },
+  { id: 178, text: "Qui ici adore se faire desirer ?", category: "Jeux" },
+  { id: 179, text: "Qui serait le/la plus fort(e) pour garder quelqu'un en haleine ?", category: "Jeux" },
+  { id: 180, text: "Qui ici sait le mieux jouer les innocents alors que ce n'est pas du tout le cas ?", category: "Jeux" },
+  { id: 181, text: "Qui serait le/la plus dur(e) a lire sentimentalement ?", category: "Jeux" },
+  { id: 182, text: "Qui ici laisse expr(es) planer le doute ?", category: "Jeux" },
+  { id: 183, text: "Qui serait le/la plus susceptible de rendre quelqu'un obsede ?", category: "Jeux" },
+  { id: 184, text: "Qui ici est le/la meilleur(e) pour faire monter l'attente ?", category: "Jeux" },
+  { id: 185, text: "Qui serait le/la plus redoutable dans un jeu de seduction ?", category: "Jeux" },
+
+  // VERSUS 2
+  { id: 186, text: "Entre {player1} et {player2}, qui ferait perdre le plus facilement ses moyens ?", category: "Versus 2" },
+  { id: 187, text: "Entre {player1} et {player2}, qui aurait la meilleure energie en date ?", category: "Versus 2" },
+  { id: 188, text: "Entre {player1} et {player2}, qui serait le/la plus inoubliable apres un crush ?", category: "Versus 2" },
+  { id: 189, text: "Entre {player1} et {player2}, qui a le plus de tension dans sa facon de parler ?", category: "Versus 2" },
+  { id: 190, text: "Entre {player1} et {player2}, qui serait le/la plus tentant(e) pour une erreur qu'on regrette pas vraiment ?", category: "Versus 2" },
+  { id: 191, text: "Entre {player1} et {player2}, qui aurait le plus de pouvoir sur un simple regard ?", category: "Versus 2" },
+  { id: 192, text: "Entre {player1} et {player2}, qui serait le/la plus coquin(e) sans rien dire ?", category: "Versus 2" },
+  { id: 193, text: "Entre {player1} et {player2}, qui rendrait le plus nerveux(se) juste en se rapprochant ?", category: "Versus 2" },
+  { id: 194, text: "Entre {player1} et {player2}, qui serait le/la plus impossible a oublier apres une nuit ?", category: "Versus 2" },
+  { id: 195, text: "Entre {player1} et {player2}, qui aurait le plus de magnetisme naturel ?", category: "Versus 2" },
+
+  // NUIT
+  { id: 196, text: "Qui ici devient le/la plus attirant(e) apres minuit ?", category: "Nuit" },
+  { id: 197, text: "Qui serait le/la plus dangereux(se) apres deux verres ?", category: "Nuit" },
+  { id: 198, text: "Qui ici sait le mieux transformer une soiree en moment ambigu ?", category: "Nuit" },
+  { id: 199, text: "Qui serait le/la plus susceptible de vivre une nuit qu'on raconte encore dans 10 ans ?", category: "Nuit" },
+  { id: 200, text: "Qui ici a l'energie la plus impossible a ignorer une fois la nuit tombee ?", category: "Nuit" },
 ];

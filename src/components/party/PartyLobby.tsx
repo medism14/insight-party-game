@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Screen } from '../layout/Screen';
 import { Button } from '../common/Button';
+import { Card } from '../common/Card';
 import { PlayerAvatar } from '../common/PlayerAvatar';
 import { useGame } from '../../hooks/useGame';
 import * as storage from '../../services/partyStorage';
@@ -55,17 +56,9 @@ export function PartyLobby() {
       title={state.currentPartyName || 'Groupe'}
     >
       <div className="flex-1 flex flex-col p-4">
-        {/* Party code display */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-4"
-        >
-          <p className="text-white/40 text-xs">Code du groupe</p>
-          <p className="text-2xl font-mono font-bold text-white tracking-widest">
-            {state.currentPartyId}
-          </p>
-        </motion.div>
+        <Card className="mb-4">
+          <p className="text-white text-sm font-semibold">Groupe local</p>
+        </Card>
 
         {/* Add player input */}
         <div className="mb-6">

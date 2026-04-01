@@ -175,4 +175,59 @@ export const spicyQuestions: Question[] = [
   { id: 153, text: "Qui serait le premier a critiquer quelqu'un absent ?", category: "Provocation" },
   { id: 154, text: "Qui ici a le plus de mal a etre sincere ?", category: "Provocation" },
   { id: 155, text: "Qui serait le plus susceptible de repandre une rumeur ?", category: "Provocation" },
+
+  // APPARENCES
+  { id: 156, text: "Qui ici passe le plus de temps a se regarder dans le miroir ?", category: "Apparences" },
+  { id: 157, text: "Qui serait le/la plus susceptible de poster juste pour attirer l'attention ?", category: "Apparences" },
+  { id: 158, text: "Qui ici changerait de style pour plaire a quelqu'un ?", category: "Apparences" },
+  { id: 159, text: "Qui serait le/la plus vex(e) si on critiquait son look ?", category: "Apparences" },
+  { id: 160, text: "Qui ici se trouve plus mysterieux(se) qu'il/elle ne l'est vraiment ?", category: "Apparences" },
+  { id: 161, text: "Qui serait le/la plus susceptible d'avoir un faux compte pour espionner ?", category: "Apparences" },
+  { id: 162, text: "Qui ici est le/la plus obsede(e) par son image ?", category: "Apparences" },
+  { id: 163, text: "Qui serait le/la plus susceptible de mentir sur son age ?", category: "Apparences" },
+  { id: 164, text: "Qui ici ferait semblant de ne pas aimer l'attention alors qu'il/elle adore ca ?", category: "Apparences" },
+  { id: 165, text: "Qui serait le/la plus susceptible de supprimer une photo parce qu'il/elle ne se trouve pas parfait(e) ?", category: "Apparences" },
+
+  // RELATIONS 2
+  { id: 166, text: "Qui ici retournerait avec quelqu'un juste par solitude ?", category: "Relations 2" },
+  { id: 167, text: "Qui serait le/la plus susceptible de tomber pour une personne toxique ?", category: "Relations 2" },
+  { id: 168, text: "Qui ici a le plus de mal a etre seul(e) ?", category: "Relations 2" },
+  { id: 169, text: "Qui serait le/la plus susceptible de garder une relation secrete ?", category: "Relations 2" },
+  { id: 170, text: "Qui ici pardonne trop facilement en amour ?", category: "Relations 2" },
+  { id: 171, text: "Qui serait le/la plus susceptible de fouiller le telephone de son/sa partenaire ?", category: "Relations 2" },
+  { id: 172, text: "Qui ici idealise le plus ses relations ?", category: "Relations 2" },
+  { id: 173, text: "Qui serait le/la plus susceptible d'envoyer un pave sentimental a 2h du matin ?", category: "Relations 2" },
+  { id: 174, text: "Qui ici ferait le plus peur a rencontrer a travers ses ex ?", category: "Relations 2" },
+  { id: 175, text: "Qui serait le/la plus susceptible de ghoster puis revenir comme si de rien n'etait ?", category: "Relations 2" },
+
+  // RESEAUX
+  { id: 176, text: "Qui ici stalke le plus sans jamais liker ?", category: "Reseaux" },
+  { id: 177, text: "Qui serait le/la plus susceptible d'effacer des messages compromettants ?", category: "Reseaux" },
+  { id: 178, text: "Qui ici fait le plus semblant d'avoir une vie parfaite en ligne ?", category: "Reseaux" },
+  { id: 179, text: "Qui serait le/la plus susceptible d'avoir une conversation entiere en reactions emoji ?", category: "Reseaux" },
+  { id: 180, text: "Qui ici a probablement capture le plus de screens en secret ?", category: "Reseaux" },
+  { id: 181, text: "Qui serait le/la plus susceptible de publier un truc puis le supprimer 5 minutes apres ?", category: "Reseaux" },
+  { id: 182, text: "Qui ici surveille le plus qui regarde ses stories ?", category: "Reseaux" },
+  { id: 183, text: "Qui serait le/la plus susceptible d'envoyer un DM qu'il/elle regrette aussitot ?", category: "Reseaux" },
+  { id: 184, text: "Qui ici pourrait se faire cancel en une nuit ?", category: "Reseaux" },
+  { id: 185, text: "Qui serait le/la plus susceptible de liker une photo vielle de 4 ans par erreur ?", category: "Reseaux" },
+
+  // VERSUS 2
+  { id: 186, text: "Entre {player1} et {player2}, qui est le/la plus toxique quand il/elle est blesse(e) ?", category: "Versus 2" },
+  { id: 187, text: "Entre {player1} et {player2}, qui serait le/la plus susceptible de ruiner une soiree par ego ?", category: "Versus 2" },
+  { id: 188, text: "Entre {player1} et {player2}, qui juge le plus en silence ?", category: "Versus 2" },
+  { id: 189, text: "Entre {player1} et {player2}, qui ferait le pire retour d'ex ?", category: "Versus 2" },
+  { id: 190, text: "Entre {player1} et {player2}, qui serait le/la plus dangereux(se) avec trop de pouvoir ?", category: "Versus 2" },
+  { id: 191, text: "Entre {player1} et {player2}, qui a le plus de chances d'etre adore(e) puis deteste(e) tres vite ?", category: "Versus 2" },
+  { id: 192, text: "Entre {player1} et {player2}, qui serait le/la plus susceptible de jouer avec les sentiments de quelqu'un ?", category: "Versus 2" },
+  { id: 193, text: "Entre {player1} et {player2}, qui supporte le moins qu'on lui dise non ?", category: "Versus 2" },
+  { id: 194, text: "Entre {player1} et {player2}, qui serait le/la plus rancunier(e) apres une petite remarque ?", category: "Versus 2" },
+  { id: 195, text: "Entre {player1} et {player2}, qui est le/la plus doue(e) pour retourner une situation a son avantage ?", category: "Versus 2" },
+
+  // SOUS PRESSION
+  { id: 196, text: "Qui ici craquerait le plus vite si on confrontait tous ses mensonges ?", category: "Pression" },
+  { id: 197, text: "Qui serait le/la plus susceptible de pleurer apres une simple dispute ?", category: "Pression" },
+  { id: 198, text: "Qui ici perd le plus ses moyens quand il/elle est attire(e) ?", category: "Pression" },
+  { id: 199, text: "Qui serait le/la plus susceptible de reveler un secret juste pour soulager la tension ?", category: "Pression" },
+  { id: 200, text: "Qui ici donne l'impression d'etre solide alors qu'il/elle est le/la plus fragile ?", category: "Pression" },
 ];

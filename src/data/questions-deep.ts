@@ -177,4 +177,59 @@ export const deepQuestions: Question[] = [
   { id: 153, text: "Quelle est la verite la plus liberatrice que tu aies decouverte ?", category: "Sagesse" },
   { id: 154, text: "Qu'est-ce qui t'a appris a lacher prise ?", category: "Sagesse" },
   { id: 155, text: "Quelle experience douloureuse t'a rendu(e) plus fort(e) ?", category: "Sagesse" },
+
+  // GUERISON
+  { id: 156, text: "Qu'est-ce qui est encore en train de guerir en toi ?", category: "Guerison" },
+  { id: 157, text: "Quelle blessure aimerais-tu ne plus porter ?", category: "Guerison" },
+  { id: 158, text: "A quel moment as-tu compris que tu devais prendre soin de toi autrement ?", category: "Guerison" },
+  { id: 159, text: "Qu'est-ce qui t'aide a te reconstruire quand tout devient lourd ?", category: "Guerison" },
+  { id: 160, text: "Qu'aimerais-tu pardonner a la version plus jeune de toi ?", category: "Guerison" },
+  { id: 161, text: "Quelle phrase aurais-tu eu besoin d'entendre plus tot ?", category: "Guerison" },
+  { id: 162, text: "Qu'est-ce qui te fait sentir que tu avances vraiment ?", category: "Guerison" },
+  { id: 163, text: "Quelle peur t'empeche encore de vivre pleinement ?", category: "Guerison" },
+  { id: 164, text: "Qu'est-ce que tu dois encore apprendre a laisser partir ?", category: "Guerison" },
+  { id: 165, text: "Comment sais-tu qu'une blessure n'a plus le meme pouvoir sur toi ?", category: "Guerison" },
+
+  // IDENTITE
+  { id: 166, text: "Qui es-tu quand tu n'essaies plus de plaire a personne ?", category: "Identite" },
+  { id: 167, text: "Quelle part de toi proteges-tu le plus ?", category: "Identite" },
+  { id: 168, text: "Dans quels moments te sens-tu le plus authentique ?", category: "Identite" },
+  { id: 169, text: "Qu'est-ce que les gens projettent sur toi qui est faux ?", category: "Identite" },
+  { id: 170, text: "Quelle version de toi les autres connaissent mal ?", category: "Identite" },
+  { id: 171, text: "Qu'est-ce que tu refuses de devenir ?", category: "Identite" },
+  { id: 172, text: "Quelle contradiction vis-tu le plus souvent en toi ?", category: "Identite" },
+  { id: 173, text: "Quand te sens-tu en decalage avec le monde ?", category: "Identite" },
+  { id: 174, text: "Qu'est-ce qui reveille ton sentiment d'imposture ?", category: "Identite" },
+  { id: 175, text: "Qu'est-ce que tu voudrais assumer davantage sur toi ?", category: "Identite" },
+
+  // TEMPS
+  { id: 176, text: "Quel moment de ta vie t'a paru durer une eternite ?", category: "Temps" },
+  { id: 177, text: "Qu'est-ce qui passe trop vite dans ton existence actuelle ?", category: "Temps" },
+  { id: 178, text: "Quelle periode te manque sans que tu veuilles y retourner ?", category: "Temps" },
+  { id: 179, text: "Comment as-tu change en silence ces dernieres annees ?", category: "Temps" },
+  { id: 180, text: "Quel age de ta vie t'intrigue encore aujourd'hui ?", category: "Temps" },
+  { id: 181, text: "Quel souvenir a transforme ta perception du temps ?", category: "Temps" },
+  { id: 182, text: "Qu'est-ce que tu repousses comme si tu avais tout le temps du monde ?", category: "Temps" },
+  { id: 183, text: "Quel futur te semble a la fois desire et effrayant ?", category: "Temps" },
+  { id: 184, text: "Qu'aimerais-tu vivre plus lentement ?", category: "Temps" },
+  { id: 185, text: "Qu'est-ce que tu ne veux surtout pas remettre a plus tard ?", category: "Temps" },
+
+  // AMOUR
+  { id: 186, text: "Qu'est-ce qu'une relation saine t'inspire vraiment ?", category: "Amour" },
+  { id: 187, text: "Quand t'es-tu senti(e) aime(e) de la facon la plus juste ?", category: "Amour" },
+  { id: 188, text: "Qu'est-ce que tu ne veux plus accepter en amour ?", category: "Amour" },
+  { id: 189, text: "Quelle peur as-tu quand quelqu'un te voit vraiment ?", category: "Amour" },
+  { id: 190, text: "Comment reagis-tu quand l'amour devient trop reel ?", category: "Amour" },
+  { id: 191, text: "Quel genre de presence te fait tomber les defenses ?", category: "Amour" },
+  { id: 192, text: "Qu'est-ce que tu aimerais apprendre a mieux recevoir d'une personne qui t'aime ?", category: "Amour" },
+  { id: 193, text: "Quel est le geste d'amour qui te bouleverse le plus ?", category: "Amour" },
+  { id: 194, text: "Que redoutes-tu le plus dans l'intimite emotionnelle ?", category: "Amour" },
+  { id: 195, text: "Qu'est-ce qui te ferait dire : la, je suis enfin en securite avec quelqu'un ?", category: "Amour" },
+
+  // ESPERANCE
+  { id: 196, text: "Qu'est-ce qui te donne envie de croire que le meilleur reste possible ?", category: "Esperance" },
+  { id: 197, text: "Quelle petite chose suffit parfois a raviver ta lumiere ?", category: "Esperance" },
+  { id: 198, text: "Quel reve refuses-tu d'abandonner meme en silence ?", category: "Esperance" },
+  { id: 199, text: "Qu'est-ce que tu voudrais voir fleurir dans ta vie bientot ?", category: "Esperance" },
+  { id: 200, text: "Quelle promesse aimerais-tu te faire pour la suite ?", category: "Esperance" },
 ];

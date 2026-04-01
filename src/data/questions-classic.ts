@@ -167,4 +167,59 @@ export const classicQuestions: Question[] = [
   { id: 153, text: "Si {player} etait un fruit, lequel serait-il/elle ?", category: "Fun" },
   { id: 154, text: "Quel serait le pouvoir magique de {player} ?", category: "Fun" },
   { id: 155, text: "Si {player} etait une ville, laquelle serait-il/elle ?", category: "Fun" },
+
+  // QUOTIDIEN
+  { id: 156, text: "Quel est le rituel du matin de {player} ?", category: "Quotidien" },
+  { id: 157, text: "Quel est le pire retard que {player} pourrait avoir ?", category: "Quotidien" },
+  { id: 158, text: "Quel est le petit luxe prefere de {player} ?", category: "Quotidien" },
+  { id: 159, text: "Quelle tache menagere {player} deteste le plus ?", category: "Quotidien" },
+  { id: 160, text: "Quelle habitude de {player} est la plus reconnaissable ?", category: "Quotidien" },
+  { id: 161, text: "Quel est l'objet que {player} perd le plus souvent ?", category: "Quotidien" },
+  { id: 162, text: "Qu'est-ce que {player} commande presque toujours ?", category: "Quotidien" },
+  { id: 163, text: "Comment {player} passe un dimanche parfait ?", category: "Quotidien" },
+  { id: 164, text: "Quel est le message type que {player} envoie souvent ?", category: "Quotidien" },
+  { id: 165, text: "Quel est le plus gros caprice du quotidien de {player} ?", category: "Quotidien" },
+
+  // TRAVAIL ET ETUDES
+  { id: 166, text: "Quel type de collegue ou camarade est {player} ?", category: "Travail" },
+  { id: 167, text: "Quelle excuse {player} utiliserait pour secher ?", category: "Travail" },
+  { id: 168, text: "Quel est le talent de reunion de {player} ?", category: "Travail" },
+  { id: 169, text: "Dans quel metier improbable {player} serait excellent(e) ?", category: "Travail" },
+  { id: 170, text: "Quelle presentation PowerPoint resumerait la vie de {player} ?", category: "Travail" },
+  { id: 171, text: "Comment {player} gere une deadline de derniere minute ?", category: "Travail" },
+  { id: 172, text: "Quel prof ou manager correspondrait le mieux a {player} ?", category: "Travail" },
+  { id: 173, text: "Quelle competence sous-estimee a {player} ?", category: "Travail" },
+  { id: 174, text: "Quel serait le nom du projet secret de {player} ?", category: "Travail" },
+  { id: 175, text: "Comment {player} celebre une petite victoire au travail ?", category: "Travail" },
+
+  // VOYAGE
+  { id: 176, text: "Quel est le pire road trip imaginable avec {player} ?", category: "Voyage" },
+  { id: 177, text: "Quel type de touriste est {player} a l'etranger ?", category: "Voyage" },
+  { id: 178, text: "Quelle ville matcherait parfaitement avec l'energie de {player} ?", category: "Voyage" },
+  { id: 179, text: "Qu'est-ce que {player} oublierait forcement dans sa valise ?", category: "Voyage" },
+  { id: 180, text: "Quel souvenir kitsch {player} rapporterait d'un voyage ?", category: "Voyage" },
+  { id: 181, text: "Quel serait le voyage improvis(e) ideal de {player} ?", category: "Voyage" },
+  { id: 182, text: "Comment {player} occupe un long trajet ?", category: "Voyage" },
+  { id: 183, text: "Quelle destination refleterait le mieux {player} en amoureux(se) ?", category: "Voyage" },
+  { id: 184, text: "Quel aeroport ferait perdre patience a {player} ?", category: "Voyage" },
+  { id: 185, text: "Quel role prendrait {player} dans un groupe de voyageurs ?", category: "Voyage" },
+
+  // IMAGINAIRE
+  { id: 186, text: "Si {player} etait un sort magique, lequel serait-il/elle ?", category: "Imaginaire" },
+  { id: 187, text: "Quel monstre mythique ressemblerait le plus a {player} ?", category: "Imaginaire" },
+  { id: 188, text: "Si {player} avait une ile privee, comment s'appellerait-elle ?", category: "Imaginaire" },
+  { id: 189, text: "Quel serait le nom du royaume de {player} ?", category: "Imaginaire" },
+  { id: 190, text: "Si {player} devait vivre dans un jeu video, lequel choisirait-il/elle ?", category: "Imaginaire" },
+  { id: 191, text: "Quel objet legendaire appartiendrait a {player} ?", category: "Imaginaire" },
+  { id: 192, text: "Si {player} avait un dragon, comment le dresserait-il/elle ?", category: "Imaginaire" },
+  { id: 193, text: "Quelle mission secondaire serait faite pour {player} ?", category: "Imaginaire" },
+  { id: 194, text: "Quel titre royal irait a {player} ?", category: "Imaginaire" },
+  { id: 195, text: "Si {player} etait une creature fantastique, laquelle serait-il/elle ?", category: "Imaginaire" },
+
+  // VIBES
+  { id: 196, text: "Quelle ambiance musicale suit {player} partout ?", category: "Vibes" },
+  { id: 197, text: "Quel genre de pluie correspond a {player} ?", category: "Vibes" },
+  { id: 198, text: "Quel decor de film ressemble le plus a l'univers de {player} ?", category: "Vibes" },
+  { id: 199, text: "Quelle heure de la journee correspond le mieux a {player} ?", category: "Vibes" },
+  { id: 200, text: "Quel mood permanent definit le mieux {player} ?", category: "Vibes" },
 ];

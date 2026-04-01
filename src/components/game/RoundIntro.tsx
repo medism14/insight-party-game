@@ -66,15 +66,15 @@ export function RoundIntro() {
           </div>
 
           <p className="text-white/60">
-            Chaque joueur repond a une question
+            Chaque joueur affronte d'abord le systeme a pile ou face.
             <br />
-            puis joue a pile ou face !
+            S'il perd, la question est revelee.
           </p>
 
           <div className="flex justify-center gap-4 mt-4 text-white/40 text-sm">
-            <span>🎯 Question</span>
-            <span>→</span>
             <span>🪙 Pile ou Face</span>
+            <span>→</span>
+            <span>🎯 Question si perdu</span>
             <span>→</span>
             <span>✨ Points</span>
           </div>

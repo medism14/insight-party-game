@@ -8,6 +8,12 @@ import { battleSentences } from './sentences-battle';
 import { troubleMissions } from './missions-trouble';
 import { blackoutDares } from './dares-blackout';
 
+const troublePrompts: Question[] = troubleMissions.map((mission) => ({
+  id: mission.id,
+  text: mission.text,
+  category: `Trouble ${mission.difficulty}`,
+}));
+
 export function getQuestionsForMode(mode: GameMode): Question[] {
   switch (mode) {
     case 'classic':
@@ -24,7 +30,7 @@ export function getQuestionsForMode(mode: GameMode): Question[] {
     case 'battle':
       return battleSentences;
     case 'trouble':
-      return deepQuestions;
+      return troublePrompts;
     default:
       return [];
   }
@@ -47,4 +53,5 @@ export {
   battleSentences,
   troubleMissions,
   blackoutDares,
+  troublePrompts,
 };

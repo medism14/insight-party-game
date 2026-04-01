@@ -84,9 +84,6 @@ export function PartySelect() {
           >
             Insight
           </motion.h1>
-          <p className="text-white/60">
-            {currentParty ? 'Seul ton groupe actif est visible sur cet appareil' : 'Cree ton groupe'}
-          </p>
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -131,6 +128,10 @@ export function PartySelect() {
                   </Button>
                 </div>
               </Card>
+
+              <Card className="p-6">
+                <div className="h-2" />
+              </Card>
             </motion.div>
           ) : (
             <motion.div
@@ -163,11 +164,7 @@ export function PartySelect() {
                 </Card>
               </motion.div>
 
-              <p className="text-white/50 text-sm mb-6">
-                Les autres groupes enregistres localement ne sont pas affiches ici.
-              </p>
-
-              <div className="space-y-3">
+              <div className="space-y-3 mt-6">
                 <Button
                   onClick={() => handleSelectParty(currentParty)}
                   fullWidth

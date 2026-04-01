@@ -177,4 +177,59 @@ export const trashQuestions: Question[] = [
   { id: 153, text: "Qui a les idees les plus derangees ?", category: "Folie" },
   { id: 154, text: "Qui pourrait partir vivre seul dans la foret ?", category: "Folie" },
   { id: 155, text: "Qui serait le plus convaincant en tant que psychopathe au cinema ?", category: "Folie" },
+
+  // CATASTROPHE
+  { id: 156, text: "Qui ici transformerait un simple barbecue en incident national ?", category: "Catastrophe" },
+  { id: 157, text: "Qui serait capable de rater des pates instantanees ?", category: "Catastrophe" },
+  { id: 158, text: "Qui ici se blesserait avec un objet parfaitement inoffensif ?", category: "Catastrophe" },
+  { id: 159, text: "Qui serait le/la plus susceptible de casser quelque chose chez des inconnus ?", category: "Catastrophe" },
+  { id: 160, text: "Qui ici ferait la plus grosse erreur juste apres avoir dit 't'inquiete je gere' ?", category: "Catastrophe" },
+  { id: 161, text: "Qui serait capable de se perdre en ligne droite ?", category: "Catastrophe" },
+  { id: 162, text: "Qui ici ruinerait le plus vite un plan simple ?", category: "Catastrophe" },
+  { id: 163, text: "Qui serait le/la plus dangereux(se) avec une perceuse ?", category: "Catastrophe" },
+  { id: 164, text: "Qui ici ferait tomber son telephone dans un endroit immonde ?", category: "Catastrophe" },
+  { id: 165, text: "Qui serait le/la plus susceptible de mettre le feu en cuisinant des pates ?", category: "Catastrophe" },
+
+  // HUMILIATION
+  { id: 166, text: "Qui ici pourrait se prendre une porte vitree en public ?", category: "Humiliation" },
+  { id: 167, text: "Qui serait le/la plus susceptible de dire 'toi aussi' au serveur quand il dit bon appetit ?", category: "Humiliation" },
+  { id: 168, text: "Qui ici tomberait devant son crush au pire moment ?", category: "Humiliation" },
+  { id: 169, text: "Qui serait le/la plus capable de saluer quelqu'un qui ne le/la regardait pas du tout ?", category: "Humiliation" },
+  { id: 170, text: "Qui ici pourrait envoyer le message embarrassant au mauvais groupe ?", category: "Humiliation" },
+  { id: 171, text: "Qui serait le/la plus susceptible de rire dans un moment ou il ne faut pas rire ?", category: "Humiliation" },
+  { id: 172, text: "Qui ici ferait une voix bizarre sans s'en rendre compte en appel ?", category: "Humiliation" },
+  { id: 173, text: "Qui serait le/la plus susceptible de se tromper de prenom en flirtant ?", category: "Humiliation" },
+  { id: 174, text: "Qui ici pourrait eternuer en plein moment sexy et tuer l'ambiance ?", category: "Humiliation" },
+  { id: 175, text: "Qui serait le/la plus susceptible de se faire recaler de la facon la plus spectaculaire ?", category: "Humiliation" },
+
+  // ANIMAUX
+  { id: 176, text: "Qui ici se ferait dominer par un canard ?", category: "Animaux" },
+  { id: 177, text: "Qui serait le/la plus susceptible de parler serieusement a un pigeon ?", category: "Animaux" },
+  { id: 178, text: "Qui ici se ferait poursuivre par une chevre pour une raison absurde ?", category: "Animaux" },
+  { id: 179, text: "Qui serait le/la plus probable a adopter un rat en pensant que c'est romantique ?", category: "Animaux" },
+  { id: 180, text: "Qui ici pourrait perdre un combat mental contre un poisson rouge ?", category: "Animaux" },
+  { id: 181, text: "Qui serait le/la plus susceptible de pleurer pour un cafard ?", category: "Animaux" },
+  { id: 182, text: "Qui ici finirait meilleur ami avec un lama ?", category: "Animaux" },
+  { id: 183, text: "Qui serait le/la plus susceptible de se faire voler son sandwich par une mouette ?", category: "Animaux" },
+  { id: 184, text: "Qui ici se ferait clairement humilier par un singe ?", category: "Animaux" },
+  { id: 185, text: "Qui serait le/la plus capable de nommer son aspirateur comme un animal de compagnie ?", category: "Animaux" },
+
+  // VERSUS 2
+  { id: 186, text: "Entre {player1} et {player2}, qui finirait le plus vite dans une tele-realite honteuse ?", category: "Versus 2" },
+  { id: 187, text: "Entre {player1} et {player2}, qui sent plus l'erreur de parcours ?", category: "Versus 2" },
+  { id: 188, text: "Entre {player1} et {player2}, qui serait le/la pire invit(e) de mariage ?", category: "Versus 2" },
+  { id: 189, text: "Entre {player1} et {player2}, qui a le plus d'energie gobelin ?", category: "Versus 2" },
+  { id: 190, text: "Entre {player1} et {player2}, qui serait le/la plus susceptible de lancer une rumeur stupide et d'y croire ?", category: "Versus 2" },
+  { id: 191, text: "Entre {player1} et {player2}, qui ferait le pire colocataire en 48 heures ?", category: "Versus 2" },
+  { id: 192, text: "Entre {player1} et {player2}, qui se ferait bannir le plus vite d'un supermarche ?", category: "Versus 2" },
+  { id: 193, text: "Entre {player1} et {player2}, qui aurait le plus de chances d'apparaitre dans un fait divers debile ?", category: "Versus 2" },
+  { id: 194, text: "Entre {player1} et {player2}, qui survivrait le moins bien a une semaine sans hygiene ?", category: "Versus 2" },
+  { id: 195, text: "Entre {player1} et {player2}, qui aurait le plus de potentiel de meme catastrophe ?", category: "Versus 2" },
+
+  // HALLUCINANT
+  { id: 196, text: "Qui ici aurait la theorie du complot la plus ridicule mais convaincante ?", category: "Hallucinant" },
+  { id: 197, text: "Qui serait le/la plus susceptible de croire a une malediction absurde ?", category: "Hallucinant" },
+  { id: 198, text: "Qui ici pourrait faire peur a tout le monde juste avec une anecdote vraie ?", category: "Hallucinant" },
+  { id: 199, text: "Qui serait le/la plus probable a lancer une idee si bete qu'elle devient geniale ?", category: "Hallucinant" },
+  { id: 200, text: "Qui ici a l'energie la plus proche d'un personnage secondaire completement casse ?", category: "Hallucinant" },
 ];

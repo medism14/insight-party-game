@@ -192,4 +192,54 @@ export const battleSentences: Question[] = [
   { id: 158, text: "Le pire tatouage possible : ______", category: "Random" },
   { id: 159, text: "La pire blague de papa : ______", category: "Random" },
   { id: 160, text: "Ce qui ne va vraiment pas chez moi : ______", category: "Random" },
+
+  // SOIREE
+  { id: 161, text: "La vraie raison pour laquelle cette soiree va degenerer : ______", category: "Soiree" },
+  { id: 162, text: "Le premier a disparaitre en soiree, c'est celui qui ______", category: "Soiree" },
+  { id: 163, text: "Le pire truc a mettre en playlist a 2h du matin : ______", category: "Soiree" },
+  { id: 164, text: "Ce que je crie apres trois verres : ______", category: "Soiree" },
+  { id: 165, text: "Le signe qu'il faut rentrer maintenant : ______", category: "Soiree" },
+  { id: 166, text: "La chose la plus suspecte vue dans une cuisine de soiree : ______", category: "Soiree" },
+  { id: 167, text: "Le meilleur mensonge pour prendre l'air dehors : ______", category: "Soiree" },
+  { id: 168, text: "La phrase qui finit toujours mal apres minuit : ______", category: "Soiree" },
+
+  // ARGUMENTS
+  { id: 169, text: "Le pire argument pour avoir raison : ______", category: "Arguments" },
+  { id: 170, text: "La phrase qui lance une dispute inutile : ______", category: "Arguments" },
+  { id: 171, text: "Le truc qu'on dit quand on sait qu'on a tort : ______", category: "Arguments" },
+  { id: 172, text: "La facon la plus dramatique de dire 'calme-toi' : ______", category: "Arguments" },
+  { id: 173, text: "L'excuse la plus toxique apres avoir blesse quelqu'un : ______", category: "Arguments" },
+  { id: 174, text: "Ce qu'on balance juste avant de quitter la conversation : ______", category: "Arguments" },
+  { id: 175, text: "Le detail ridicule pour lequel je pourrais me battre : ______", category: "Arguments" },
+  { id: 176, text: "La reponse passive-agressive parfaite : ______", category: "Arguments" },
+
+  // CORPS ET CERVEAU
+  { id: 177, text: "Mon cerveau bug quand ______", category: "Corps" },
+  { id: 178, text: "Le bruit que fait mon ame quand je me leve tot : ______", category: "Corps" },
+  { id: 179, text: "Le signe physique que je mens : ______", category: "Corps" },
+  { id: 180, text: "Ce que mon corps refuse absolument : ______", category: "Corps" },
+  { id: 181, text: "Mon talent corporel le plus inutile : ______", category: "Corps" },
+  { id: 182, text: "La sensation la plus satisfaisante au monde : ______", category: "Corps" },
+  { id: 183, text: "La preuve que je suis fatigue(e), c'est que ______", category: "Corps" },
+  { id: 184, text: "Le mouvement de danse qui ne devrait pas exister : ______", category: "Corps" },
+
+  // AMOUR ET DRAMA
+  { id: 185, text: "Le vrai test de compatibilite en couple : ______", category: "Amour" },
+  { id: 186, text: "La phrase qui fait instantanement perdre l'attirance : ______", category: "Amour" },
+  { id: 187, text: "Le truc le plus jaloux qu'on puisse faire discretement : ______", category: "Amour" },
+  { id: 188, text: "La chose la plus romantique mais un peu flippante : ______", category: "Amour" },
+  { id: 189, text: "Le red flag que j'ignore toujours : ______", category: "Amour" },
+  { id: 190, text: "La raison la plus ridicule pour rompre : ______", category: "Amour" },
+  { id: 191, text: "Le message qu'on n'aurait jamais du envoyer a son ex : ______", category: "Amour" },
+  { id: 192, text: "La preuve ultime qu'on est down bad : ______", category: "Amour" },
+
+  // UNIVERS PARALLELE
+  { id: 193, text: "Dans un univers parallele, je gagne ma vie en faisant ______", category: "Univers" },
+  { id: 194, text: "La religion absurde que je pourrais fonder : ______", category: "Univers" },
+  { id: 195, text: "Le nom de mon vaisseau spatial low cost : ______", category: "Univers" },
+  { id: 196, text: "La premiere loi de mon royaume imaginaire : ______", category: "Univers" },
+  { id: 197, text: "Le pouvoir qui me rendrait immediatement insupportable : ______", category: "Univers" },
+  { id: 198, text: "Le metier le plus louche dans un monde fantastique : ______", category: "Univers" },
+  { id: 199, text: "Le nom de mon alter ego mechant : ______", category: "Univers" },
+  { id: 200, text: "La facon la plus nulle de sauver l'humanite : ______", category: "Univers" },
 ];

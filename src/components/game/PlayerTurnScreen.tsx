@@ -9,7 +9,7 @@ import { useGame } from '../../hooks/useGame';
 import { getQuestionsForMode } from '../../data';
 import { pickRandomExcluding } from '../../utils/shuffle';
 
-type TurnPhase = 'intro' | 'question' | 'coin-choice' | 'coin-flip' | 'result';
+type TurnPhase = 'intro' | 'coin-choice' | 'coin-flip' | 'result';
 
 export function PlayerTurnScreen() {
   const {
@@ -33,37 +33,39 @@ export function PlayerTurnScreen() {
   const currentPlayer = getCurrentPlayer();
   const playersRemaining = getPlayersRemaining();
 
-  // Set question when entering question phase
-  useEffect(() => {
-    if (turnPhase === 'question' && !state.currentQuestion && state.mode) {
-      const questions = getQuestionsForMode(state.mode);
-      const question = pickRandomExcluding(
-        questions,
-        state.usedQuestionIds,
-        q => q.id
-      );
+  const prepareQuestion = useCallback(() => {
+    if (!state.mode || state.currentQuestion) return;
 
-      if (question) {
-        let text = question.text;
-        if (currentPlayer && text.includes('{player}')) {
-          text = text.replace(/{player}/g, currentPlayer.name);
-        }
-        if (text.includes('{player1}') || text.includes('{player2}')) {
-          const otherPlayers = state.players.filter(p => p.id !== currentPlayer?.id);
-          const shuffled = [...otherPlayers].sort(() => Math.random() - 0.5);
-          text = text.replace(/{player1}/g, shuffled[0]?.name || '');
-          text = text.replace(/{player2}/g, shuffled[1]?.name || '');
-        }
-        setQuestion({ ...question, text });
+    const questions = getQuestionsForMode(state.mode);
+    const question = pickRandomExcluding(
+      questions,
+      state.usedQuestionIds,
+      q => q.id
+    );
+
+    if (question) {
+      let text = question.text;
+      if (currentPlayer && text.includes('{player}')) {
+        text = text.replace(/{player}/g, currentPlayer.name);
       }
+      if (text.includes('{player1}') || text.includes('{player2}')) {
+        const otherPlayers = state.players.filter(p => p.id !== currentPlayer?.id);
+        const shuffled = [...otherPlayers].sort(() => Math.random() - 0.5);
+        text = text.replace(/{player1}/g, shuffled[0]?.name || '');
+        text = text.replace(/{player2}/g, shuffled[1]?.name || '');
+      }
+      setQuestion({ ...question, text });
     }
-  }, [turnPhase, state.currentQuestion, state.mode, currentPlayer, state.players, state.usedQuestionIds, setQuestion]);
+  }, [state.mode, state.currentQuestion, state.usedQuestionIds, currentPlayer, state.players, setQuestion]);
+
+  useEffect(() => {
+    if (turnPhase === 'coin-choice') {
+      prepareQuestion();
+    }
+  }, [turnPhase, prepareQuestion]);
 
   const handleStartTurn = () => {
-    setTurnPhase('question');
-  };
-
-  const handleQuestionDone = () => {
+    prepareQuestion();
     setTurnPhase('coin-choice');
   };
 
@@ -129,7 +131,7 @@ export function PlayerTurnScreen() {
                 transition={{ duration: 1, repeat: Infinity }}
                 className="mb-6"
               >
-                <span className="text-6xl">🎯</span>
+                <span className="text-6xl">🪙</span>
               </motion.div>
 
               <p className="text-white/60 text-lg mb-4">C'est au tour de</p>
@@ -154,50 +156,6 @@ export function PlayerTurnScreen() {
             </motion.div>
           )}
 
-          {turnPhase === 'question' && (
-            <motion.div
-              key="question"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col items-center justify-center"
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring' }}
-                className="mb-8"
-              >
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
-                  style={{ backgroundColor: `${modeConfig?.color}30` }}
-                >
-                  {modeConfig?.icon}
-                </div>
-              </motion.div>
-
-              <Card className="p-6 mb-8 w-full max-w-md">
-                <p className="text-white text-xl font-medium text-center leading-relaxed">
-                  {state.currentQuestion?.text || 'Chargement...'}
-                </p>
-              </Card>
-
-              <p className="text-white/40 text-sm mb-6 text-center">
-                Reponds a cette question a voix haute !
-              </p>
-
-              <Button
-                onClick={handleQuestionDone}
-                fullWidth
-                size="lg"
-                color={modeConfig?.color}
-                className="max-w-xs"
-              >
-                J'ai repondu !
-              </Button>
-            </motion.div>
-          )}
-
           {turnPhase === 'coin-choice' && (
             <motion.div
               key="coin-choice"
@@ -216,7 +174,7 @@ export function PlayerTurnScreen() {
                   Pile ou Face ?
                 </h2>
                 <p className="text-white/60">
-                  Choisis et tente ta chance !
+                  Tu affrontes le systeme. Gagne et tu echappes a la question.
                 </p>
               </motion.div>
 
@@ -291,16 +249,42 @@ export function PlayerTurnScreen() {
                   c'etait {state.coinFlipResult === 'heads' ? 'PILE' : 'FACE'}
                 </p>
                 {state.lastTurnWon && (
-                  <motion.p
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="text-yellow-400 font-bold text-lg mt-2"
-                  >
-                    +1 point !
-                  </motion.p>
+                  <>
+                    <motion.p
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="text-yellow-400 font-bold text-lg mt-2"
+                    >
+                      +1 point !
+                    </motion.p>
+                    <p className="text-white/50 mt-2">
+                      Tu n'as pas besoin de repondre.
+                    </p>
+                  </>
                 )}
               </motion.div>
+
+              {!state.lastTurnWon && state.currentQuestion && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="w-full max-w-md mb-8"
+                >
+                  <Card className="p-6">
+                    <p className="text-white/40 text-sm mb-3">
+                      Question revelee
+                    </p>
+                    <p className="text-white text-xl font-medium text-center leading-relaxed">
+                      {state.currentQuestion.text}
+                    </p>
+                  </Card>
+                  <p className="text-white/50 text-sm mt-3">
+                    Tu dois maintenant y repondre a voix haute.
+                  </p>
+                </motion.div>
+              )}
 
               <PlayerAvatar
                 name={currentPlayer.name}
@@ -317,7 +301,7 @@ export function PlayerTurnScreen() {
                 color={modeConfig?.color}
                 className="max-w-xs"
               >
-                {playersRemaining > 1 ? 'Joueur suivant' : 'Voir les resultats'}
+                {playersRemaining > 1 ? 'Tour suivant' : 'Voir les resultats'}
               </Button>
             </motion.div>
           )}
